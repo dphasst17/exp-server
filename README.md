@@ -199,6 +199,7 @@ The server will run on port 1705. You can access the server at http://localhost:
     * Register: `/register`
     * Get new token : `/new/token`
     * Forgot password : `/forgot`
-### Upload image to S3
+### Restart
 - There is also an endpoint used to restart the server: `/restart`
-  And endpoint for save image : `/upload/:folder`
+### Upload image to S3
+-And endpoint for save image : `/upload/:folder`
