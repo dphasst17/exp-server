@@ -13,7 +13,7 @@ import AWS from "aws-sdk";
 import fs from 'fs';
 import fileUpload from "express-fileupload";
 const app = express();
-const PORT = 1705;
+const PORT = process.env.PORT || 1705;
 
 dotenv.config();
 app.use(express.json());
