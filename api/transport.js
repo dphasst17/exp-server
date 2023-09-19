@@ -1,7 +1,8 @@
 import express from "express";
 import { connectDB } from "../db/connect.js";
 import { transportsSelectAll,transportsSelectOne,transportsSelectList,transportInsert,transportInsertInList,transportsUpdateStatusOne,
-transportsUpdateList,transportsDeleteOne,transportsDeleteList,billInsertOne,billInsertList} from "../db/statement/cart_transport.js";
+transportsUpdateList,transportsDeleteOne,transportsDeleteList} from "../db/statement/cart_transport.js";
+import {billInsertOne,billInsertList} from "../db/statement/bills.js"
 import { verify,filterData } from "../middleware/middleware.js";
 const router = express.Router();
 const con = connectDB()
