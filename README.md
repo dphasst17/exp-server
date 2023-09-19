@@ -182,10 +182,23 @@ The server will run on port 1705. You can access the server at http://localhost:
 
 ### Comment
 - The endpoint for comment is started with: `/api/comment`
+    * Get all comment: `/`
+    * Get comment by product: `/product/:idProduct`
+    * Get comment by user: `/user`
+    * Delete one comment: `/delete/:idComment`
+    * Delete comment in list: `/list/delete`
 ### Warehouse
 - The endpoint for warehouse is started with: `/api/ware`
+    * Get all: `/`
+    * Get total product in warehouse: `/total`
+    * Get warehouse by status: `/status`
+    * Insert data to warehouse:`/insert`
 ### Auth
 - The endpoint for auth is started with: `/auth`
-
+    * Login: `/login`
+    * Register: `/register`
+    * Get new token : `/new/token`
+    * Forgot password : `/forgot`
+### Upload image to S3
 - There is also an endpoint used to restart the server: `/restart`
   And endpoint for save image : `/upload/:folder`
