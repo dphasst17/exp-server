@@ -63,33 +63,32 @@ export const getProductByType = (idType) => {
   let joinTable;
   let infoTable;
   switch (idType) {
-    case "1":
+    case 1:
       joinTable = "laptop l ON p.idProduct = l.idProduct";
-      infoTable =
-        "l.cpu,l.capacity,l.maxram,l.storage,l.os,l.resolution,l.sizeInch,l.battery,l.material";
+      infoTable ="l.cpu,l.capacity,l.maxram,l.storage,l.os,l.resolution,l.sizeInch,l.battery,l.material";
       break;
-    case "2":
+    case 2:
       joinTable = "keyboard k ON p.idProduct = k.idProduct";
       infoTable = "k.layout,k.connection,k.switch,k.keyboardmaterial";
       break;
-    case "3":
+    case 3:
       joinTable = "monitor mo ON p.idProduct = mo.idProduct";
       infoTable =
         "mo.resolution,mo.sizeInch,mo.scanfrequency,mo.brightness,mo.contrast,mo.viewing_angle,mo.response_time,mo.connector";
       break;
-    case "4":
+    case 4:
       joinTable = "ram r ON p.idProduct = r.idProduct";
       infoTable = "r.capacity,r.busram,r.typeram";
       break;
-    case "5":
+    case 5:
       joinTable = "harddrive h ON p.idProduct = h.idProduct";
       infoTable = "h.connectionprotocol,h.capacitylevels,h.size";
       break;
-    case "6":
+    case 6:
       joinTable = "vga v ON p.idProduct = v.idProduct";
       infoTable = "v.memory,v.memoryspeed,v.heartbeatv.size,v.resolution";
       break;
-    case "7":
+    case 7:
       joinTable = "mouse m ON p.idProduct = m.idProduct";
       infoTable = "m.dpi,m.connection,m.switch,m.ledlight";
       break;
@@ -99,7 +98,7 @@ export const getProductByType = (idType) => {
       LEFT JOIN ${joinTable}
       LEFT JOIN type t ON p.idType = t.idType 
       WHERE p.idType=${idType}
-      ORDER BY p.idProduct;`;
+      `;
   return sql;
 };
 
@@ -133,27 +132,28 @@ export const productInsertInfo = (listData) => {
   return sql;
 }
 export const productInsertDetail = (idType,productValue) => {
+  let newIdType = Number(idType)
   let table;
-  switch(idType){
-    case '1':
+  switch(newIdType){
+    case 1:
       table = `laptop(idProduct,cpu,capacity,maxram,storage,os,resolution,sizeInch,battery,material)`
       break;
-    case '2':
+    case 2:
       table = `keyboard(idProduct,layout,connection,switch,keyboardmaterial,material,weight)`
       break;
-    case '3':
+    case 3:
       table = `monitor(idProduct,resolution,scanfrequency,brightness,contrast,viewing_angle,response_time,connector)`
       break;
-    case '4':
+    case 4:
       table = `ram(idProduct,capacity,busram,typeram,speed,latency,voltage,color)`
       break;
-    case '5':
+    case 5:
       table = `harddrive(idProduct,connectionprotocol,capacitylevels,size)`
       break;
-    case '6':
+    case 6:
       table = `vga(idProduct,memory,memoryspeed,heartbeat,size,resolution,numberOfDisplayPort,numberOfHDMI,support)`
       break;
-    case '7':
+    case 7:
       table = `mouse(idProduct,dpi,connection,switch,ledlight,type,number_of_button,size,weight)`
       break;
   }

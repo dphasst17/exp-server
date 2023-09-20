@@ -75,7 +75,7 @@ router.get('/type/:nameType',(req,res) => {
     }
 })
 
-router.get('/detail/get/:idType/:idProduct',(req,res) => {
+router.get('/detail/get /:idType/:idProduct',(req,res) => {
     const idType = req.params['idType'];
     const idProduct = req.params['idProduct'];
     let sql = sqlQuery.getDetail(idType,idProduct)
@@ -113,7 +113,7 @@ router.post('/insert',filterData,(req,res) => {
         if(err){res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."})};
         const idProduct = results.insertId
         const lastResult = `${idProduct},${resultDetail}`
-        const sqlDetail = sqlQuery.productInsertDetail(lastResult);
+        const sqlDetail = sqlQuery.productInsertDetail(productInf[5],lastResult);
         con.query(sqlDetail,(err,results) => {
             if(err){res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."})};
             return queryCheck = true
