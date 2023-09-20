@@ -86,7 +86,8 @@ The server will run on port 1705. You can access the server at http://localhost:
     * Get all product: `/`
     * Get new product: `/new`
     * Get product by name type: `/type/:nameType`
-    * Get detail product: `/detail/:idType/:idProduct`
+    * Get detail product: `/detail/get/:idType/:idProduct`
+    * Search || Get product by keyword: `/search/:keyword`
     * Add new product: `/insert`
         ![Table product](imgReadme/productTable.png)
             * The information that needs to be posted to the products table:

@@ -33,7 +33,7 @@ router.get('/new',(req,res) => {
     });
 })
 
-router.get('type/:nameType',(req,res) => {
+router.get('/type/:nameType',(req,res) => {
     const nameType = req.params['nameType'];
     let sql;
     switch(nameType){
@@ -75,7 +75,7 @@ router.get('type/:nameType',(req,res) => {
     }
 })
 
-router.get('detail/:idType/:idProduct',(req,res) => {
+router.get('/detail/get/:idType/:idProduct',(req,res) => {
     const idType = req.params['idType'];
     const idProduct = req.params['idProduct'];
     let sql = sqlQuery.getDetail(idType,idProduct)
