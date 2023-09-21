@@ -75,7 +75,7 @@ router.get('/type/:nameType',(req,res) => {
     }
 })
 
-router.get('/detail/get /:idType/:idProduct',(req,res) => {
+router.get('/detail/get/:idType/:idProduct',(req,res) => {
     const idType = req.params['idType'];
     const idProduct = req.params['idProduct'];
     let sql = sqlQuery.getDetail(idType,idProduct)
