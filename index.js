@@ -59,10 +59,9 @@ app.post('/upload/:folder',async (req, res) => {
     console.log("Upload Success", data.Location);
     res.json("Upload image to success");
   } catch (err) {
-    res.status(500).json('')
+    res.status(500).json(err)
   }
-});
-
+}); 
 app.use('/api/product', productRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/transports', transRouter);
