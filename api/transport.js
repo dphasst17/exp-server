@@ -22,7 +22,6 @@ router.get('/get/:idTrans',(req,res) => {
         res.status(200).json(results)
     })
 })
-
 router.post('/insert',verify,filterData,(req,res) => {
     const idUser = req.idUser;
     const data = req.result;
@@ -32,7 +31,7 @@ router.post('/insert',verify,filterData,(req,res) => {
         res.status(201).json({message:'Insert success'})
     })
 })
-router.post('/update/:idTrans',filterData,(req,res) => {
+router.patch('/update/:idTrans',filterData,(req,res) => {
     const idTrans = req.params['idTrans'];
     const data = req.result;
     const sql = transportsUpdateStatusOne(idTrans,data.status);
@@ -41,7 +40,6 @@ router.post('/update/:idTrans',filterData,(req,res) => {
         res.status(201).json({message:'Update success'})
     })
 })
-
 router.delete('/delete/:idTrans',filterData,(req,res) => {
     const idTrans = req.params['idTrans'];
     const sql = transportsDeleteOne(idTrans);
@@ -50,17 +48,15 @@ router.delete('/delete/:idTrans',filterData,(req,res) => {
         res.status(201).json({message:'Update success'})
     })
 })
-
 router.post('/list/get',filterData,(req,res) => {
     const data = req.result;
-    const cart_ids_str = data.join(",");
+    const cart_ids_str = data.list.join(",");
     const sql = transportsSelectList(cart_ids_str);
     con.query(sql,function(err,results){
         if(err) throw err
         res.status(200).json(results)
     })
 })
-
 router.post('/list/insert',verify,filterData,(req,res) => {
     const idUser = req.idUser;
     const data = req.result;
@@ -70,8 +66,7 @@ router.post('/list/insert',verify,filterData,(req,res) => {
         res.status(201).json({message:'Insert to success'})
     })
 })
-
-router.post('/list/update/:status',filterData,(req,res) => {
+router.patch('/list/update/:status',filterData,(req,res) => {
     let status;
     const param = req.params['status'];
     switch(param){
@@ -88,24 +83,22 @@ router.post('/list/update/:status',filterData,(req,res) => {
             break;
     }
     const data = req.result;
-    const cart_ids_str = data.join(",");
+    const cart_ids_str = data.list.join(",");
     const sql = transportsUpdateList(status,cart_ids_str);
     con.query(sql,function(err,results){
         if(err) throw err
         res.status(201).json({message:'Update success'})
     })
 })
-
-router.post('/list/delete',filterData,(req,res) => {
+router.delete('/list/delete',filterData,(req,res) => {
     const data = req.result;
-    const cart_ids_str = data.join(",");
+    const cart_ids_str = data.list.join(",");
     const sql = transportsDeleteList(cart_ids_str);
     con.query(sql,function(err,results){
         if(err) throw err
         res.status(201).json({message:'Update success'})
     })
 })
-
 router.post('/success',filterData,(req,res) => {
     const data = req.result;
     const idTrans = data.id;

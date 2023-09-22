@@ -164,7 +164,7 @@ router.delete('/delete/:idProduct',filterData,(req,res) => {
 })
 router.delete('/list/delete',filterData,(req,res) => {
     const data = req.result;
-    const list_cart = data.join(",");
+    const list_cart = data.list.join(",");
     const sql = sqlQuery.productDeleteList(list_cart)
     con.query(sql,(err,results) => {
         if(err){res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."})};

@@ -38,7 +38,7 @@ router.delete('/delete/:idComment',(req,res) => {
 })
 router.delete('/list/delete',filterData,(req,res) => {
     const data = req.result;
-    const list_data = data.join(",")
+    const list_data = data.list.join(",")
     const sql = sqlQuery.commentDeleteInList(list_data);
     con.query(sql,(err,results) => {
         if(err){res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."})};

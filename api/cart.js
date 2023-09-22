@@ -33,7 +33,7 @@ router.post('/add',verify,filterData,(req,res) => {
 })
 router.post('/list',filterData,(req,res) => {
     const data = req.body;
-    const cart_ids_str = data.join(",");
+    const cart_ids_str = data.list.join(",");
     const sql = getProductInList(cart_ids_str)
     con.query(sql,function(err,results){
         if(err){res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."})};
@@ -67,9 +67,9 @@ router.delete('/delete',verify,(req,res) => {
         res.json({ message: "Delete cart is success" });
     })
 })
-router.post('/list/delete',filterData,(req,res) => {
+router.delete('/list/delete',filterData,(req,res) => {
     const data = req.body;
-    const cart_ids_str = data.join(",");
+    const cart_ids_str = data.list.join(",");
     const sql = cartDeleteList(cart_ids_str)
     con.query(sql,function(err,results){
         if(err){res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."})};
