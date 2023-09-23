@@ -1,55 +1,49 @@
 import express from "express";
 import dotenv from "dotenv";
-import { connectDB } from "../db/connect.js";
+import { poolConnectDB } from "../db/connect.js";
 import { filterData } from "../middleware/middleware.js";
 import * as sqlQuery from "../db/statement/product.js";
 const router = express.Router();
 dotenv.config();
-const con = connectDB();
+const pool = poolConnectDB();
 
 router.get("/search/:keyword", (req, res) => {
   const keyboard = req.params["keyword"];
   let sql = sqlQuery.searchProduct(keyboard);
-  con.query(sql, function (err, results) {
+  pool.query(sql, function (err, results) {
     if (err) {
       res.status(500).json({
         message: "A server error occurred. Please try again in 5 minutes.",
       });
-      con.end();
       return;
     }
     res.status(200).json(results);
-    con.end();
   });
 });
 
 router.get("/", (req, res) => {
   let sql = sqlQuery.getAll();
-  con.query(sql, function (err, results) {
+  pool.query(sql, function (err, results) {
     if (err) {
       res.status(500).json({
         message: "A server error occurred. Please try again in 5 minutes.",
       });
-      con.end();
       return;
     }
     res.json(results);
-    con.end();
   });
 });
 
 router.get("/new", (req, res) => {
   let sql = sqlQuery.getNewProduct();
-  con.query(sql, function (err, results) {
+  pool.query(sql, function (err, results) {
     if (err) {
       res.status(500).json({
         message: "A server error occurred. Please try again in 5 minutes.",
       });
-      con.end();
       return;
     }
     res.json(results);
-    con.end();
   });
 });
 
@@ -85,12 +79,11 @@ router.get("/type/:nameType", (req, res) => {
   if (sql === false) {
     res.status(404).send("Url not found");
   } else {
-    con.query(sql, function (err, results) {
+    pool.query(sql, function (err, results) {
       if (err) {
         res.status(500).json({
           message: "A server error occurred. Please try again in 5 minutes.",
         });
-        con.end();
         return;
       }
       res.json(
@@ -99,7 +92,6 @@ router.get("/type/:nameType", (req, res) => {
           return e;
         })
       );
-      con.end();
     });
   }
 });
@@ -108,12 +100,11 @@ router.get("/detail/get/:idType/:idProduct", (req, res) => {
   const idType = req.params["idType"];
   const idProduct = req.params["idProduct"];
   let sql = sqlQuery.getDetail(idType, idProduct);
-  con.query(sql, function (err, results) {
+  pool.query(sql, function (err, results) {
     if (err) {
       res.status(500).json({
         message: "A server error occurred. Please try again in 5 minutes.",
       });
-      con.end();
       return;
     }
     res.json(
@@ -122,7 +113,6 @@ router.get("/detail/get/:idType/:idProduct", (req, res) => {
         return e;
       })
     );
-    con.end();
   });
 });
 
@@ -151,23 +141,21 @@ router.post("/insert", filterData, (req, res) => {
     .toString();
   const sqlProduct = sqlQuery.productInsertInfo(resultProduct);
 
-  con.query(sqlProduct, (err, results) => {
+  pool.query(sqlProduct, (err, results) => {
     if (err) {
       res.status(500).json({
         message: "A server error occurred. Please try again in 5 minutes.",
       });
-      con.end();
       return;
     }
     const idProduct = results.insertId;
     const lastResult = `${idProduct},${resultDetail}`;
     const sqlDetail = sqlQuery.productInsertDetail(productInf[5], lastResult);
-    con.query(sqlDetail, (err, results) => {
+    pool.query(sqlDetail, (err, results) => {
       if (err) {
         res.status(500).json({
           message: "A server error occurred. Please try again in 5 minutes.",
         });
-        con.end();
         return;
       }
       return (queryCheck = true);
@@ -175,7 +163,6 @@ router.post("/insert", filterData, (req, res) => {
   });
 
   queryCheck === true && res.status(201).json({ message: "Add product to success" });
-  con.end();
 });
 
 router.put("/update/:idProduct", filterData, (req, res) => {
@@ -192,16 +179,14 @@ router.put("/update/:idProduct", filterData, (req, res) => {
     })
     .toString();
   const sql = sqlQuery.productUpdate(idProduct, resultProduct);
-  con.query(sql, (err, results) => {
+  pool.query(sql, (err, results) => {
     if (err) {
       res.status(500).json({
         message: "A server error occurred. Please try again in 5 minutes.",
       });
-      con.end();
       return;
     }
     res.status(204).json({ message: "Update to success" });
-    con.end();
   });
 });
 router.put("/detail/update/:idType/:idProduct", filterData, (req, res) => {
@@ -216,47 +201,41 @@ router.put("/detail/update/:idType/:idProduct", filterData, (req, res) => {
     }
   });
   const sql = sqlQuery.productUpdateDetail(idType, idProduct, resultDetail);
-  con.query(sql, (err, results) => {
+  pool.query(sql, (err, results) => {
     if (err) {
       res.status(500).json({
         message: "A server error occurred. Please try again in 5 minutes.",
       });
-      con.end();
       return;
     }
     res.status(204).json({ message: "Update product to success" });
-    con.end();
   });
 });
 router.delete("/delete/:idProduct", filterData, (req, res) => {
   const idProduct = req.params["idProduct"];
   const sql = sqlQuery.productDelete(idProduct);
-  con.query(sql, (err, results) => {
+  pool.query(sql, (err, results) => {
     if (err) {
       res.status(500).json({
         message: "A server error occurred. Please try again in 5 minutes.",
       });
-      con.end();
       return;
     }
     res.status(200).json({ message: "Delete product to success" });
-    con.end();
   });
 });
 router.delete("/list/delete", filterData, (req, res) => {
   const data = req.result;
   const list_cart = data.list.join(",");
   const sql = sqlQuery.productDeleteList(list_cart);
-  con.query(sql, (err, results) => {
+  pool.query(sql, (err, results) => {
     if (err) {
       res.status(500).json({
         message: "A server error occurred. Please try again in 5 minutes.",
       });
-      con.end();
       return;
     }
     res.status(200).json({ message: "Delete success" });
-    con.end();
   });
 });
 export default router;

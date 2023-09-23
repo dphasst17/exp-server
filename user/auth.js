@@ -1,20 +1,19 @@
 import express from "express";
 import dotenv from "dotenv";
-import { connectDB } from "../db/connect.js";
+import { poolConnectDB } from "../db/connect.js";
 import * as sqlQuery from "../db/statement/user.js";
 import { filterData, verify } from "../middleware/middleware.js";
 import bcrypt from 'bcrypt'
 import jwt from "jsonwebtoken";
 const router = express.Router();
 dotenv.config();
-const con = connectDB();
+const pool = poolConnectDB();
 
 const updateLogin = (idUser, token) => {
     const sql = `UPDATE login SET rfToken = '${token}' WHERE idUser = '${idUser}'`;
-    con.query(sql, function (err, results) {
+    pool.query(sql, function (err, results) {
         if (err) {
             res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
-            con.end();
             return;
         }
     })
@@ -42,14 +41,13 @@ const handleRegister = (...props) => {
     const salt = bcrypt.genSaltSync(saltRound);
     const pass_hash = bcrypt.hashSync(props[1], salt);
     const newSql = props[2] === "u" ? sqlQuery.register(props[0], props[0], pass_hash, props[2]) : sqlQuery.register(props[4], props[0], pass_hash, props[2])
-    con.query(newSql, function (err, results) {
+    pool.query(newSql, function (err, results) {
         if (err) {
             res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
-            con.end();
             return;
         }
         let insertData = props[2] === "u" ? sqlQuery.insertUserTypeU(props[0]) : sqlQuery.insertUserTypeE(props[4], props[3], props[0])
-        con.query(insertData, function (err, result) {
+        pool.query(insertData, function (err, result) {
             if (err) throw err
         })
     })
@@ -60,10 +58,9 @@ router.post('/register', filterData, (req, res) => {
     const username = data.username;
     const password = data.password;
     const sql = sqlQuery.login(username)
-    con.query(sql, function (err, results) {
+    pool.query(sql, function (err, results) {
         if (err) {
             res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
-            con.end();
             return;
         }
         if (results.length !== 0) {
@@ -72,7 +69,6 @@ router.post('/register', filterData, (req, res) => {
             handleRegister(username, password, 'u')
             const resultObj = createToken(username)
             res.status(201).json(resultObj)
-            con.end();
         }
     })
 
@@ -87,10 +83,9 @@ router.post('/login', filterData, (req, res) => {
     if (email) {
         let resultObj;
         const sql = sqlQuery.login(email);
-        con.query(sql, function (err, results) {
+        pool.query(sql, function (err, results) {
             if (err) {
                 res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
-                con.end();
                 return;
             }
             if (results.length === 0) {
@@ -104,14 +99,12 @@ router.post('/login', filterData, (req, res) => {
             resultObj = createToken(idUser)
             resultObj.role = role;
             res.status(200).json(resultObj);
-            con.end();
         });
     } else {
         const sql = sqlQuery.login(id);
-        con.query(sql, function (err, results) {
+        pool.query(sql, function (err, results) {
             if (err) {
                 res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
-                con.end();
                 return;
             }
             const pass_hash = results.map(e => e.password_hash).toString()
@@ -128,7 +121,6 @@ router.post('/login', filterData, (req, res) => {
             const resultObj = createToken(idUser)
             resultObj.role = role;
             res.status(200).json(resultObj);
-            con.end();
         })
 
     }
@@ -140,10 +132,9 @@ router.post('/new/token', verify, (req, res) => {
     const idUser = result.split("-")[0]
     let checkToken = false;
     const sql = `SELECT rfToken FROM login WHERE idUser = '${idUser}'`;
-    con.query(sql, function (err, results) {
+    pool.query(sql, function (err, results) {
         if (err) {
             res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
-            con.end();
             return;
         }
         results.map(e => {
@@ -155,7 +146,6 @@ router.post('/new/token', verify, (req, res) => {
             const accessToken = jwt.sign({ id: idUser }, process.env.SECRET_KEY, { expiresIn: "600s", });
             const { exp: expAccess } = jwt.decode(accessToken);
             res.json({ accessToken, expAccess })
-            con.end();
         }
     })
 
