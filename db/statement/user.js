@@ -15,15 +15,15 @@ export const register = (idUser,username,password,type) => {
     return sql
 }
 export const getUser = (idUser) =>{
-    const sql = `SELECT * FROM users WHERE idUser = '${idUser}'`;
+    const sql = `SELECT u.*,l.role FROM users u JOIN login l ON u.idUser = l.idUser WHERE idUser = '${idUser}'`;
     return sql;
 }
 export const getRole = (role) => {
-    const sql = `SELECT u.* FROM users u JOIN login l ON u.idUser = l.idUser  WHERE l.role = ${role}`;
+    const sql = `SELECT u.*,l.role FROM users u JOIN login l ON u.idUser = l.idUser  WHERE l.role = ${role}`;
     return sql;
 }
 export const getRoleDifferent = (role) => {
-    const sql = `SELECT u.* FROM users u JOIN login l ON u.idUser = l.idUser  WHERE l.role != ${role}`;
+    const sql = `SELECT u.*,l.role FROM users u JOIN login l ON u.idUser = l.idUser  WHERE l.role != ${role}`;
     return sql;
 }
 export const changeUser = (idUser,name,email,phone) => {
