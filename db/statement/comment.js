@@ -3,7 +3,8 @@ export const commentInsert = (idProduct,idUser,commentValue,date) => {
     return sql;
 }
 export const commentGetAll = () => {
-    const sql = `SELECT c.*,p.nameProduct,p.imgProduct FROM comments c JOIN products p ON c.idProduct = p.idProduct`;
+    const sql = `SELECT c.idProduct,p.nameProduct,p.imgProduct, CONCAT('[', GROUP_CONCAT(JSON_OBJECT('idUser', c.idUser, 'commentValue', c.commentValue, 'dateComment', c.dateComment)), ']') 
+    AS detail FROM comments c JOIN products p ON c.idProduct = p.idProduct GROUP BY idProduct;`;
     return sql
 }
 export const getCommentByIdProduct = (idProduct) => {
