@@ -14,7 +14,13 @@ router.get("/", (req, res) => {
       });
       return;
     }
-    res.status(200).json({ data: results });
+    let lastResult = results.map(e => {
+      return {
+        ...e,
+        detail:JSON.parse(e.detail)
+      }
+    })
+    res.status(200).json({lastResult});
   });
 });
 router.get("/product/:idProduct", (req, res) => {
