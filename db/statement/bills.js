@@ -19,5 +19,8 @@ export const billDeleteList = (list) => {
     const sql = `DELETE FROM bills WHERE idBill IN (${list})`;
     return sql;
 }
-
+export const revenue = () => {
+    const sql = `SELECT b.idProduct,SUM(countProduct) AS count, SUM(totalProduct) AS total FROM bills b JOIN products p ON b.idProduct = p.idProduct;`
+    return sql;
+}
 //In case of failure to ship an order

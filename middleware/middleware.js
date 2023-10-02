@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
-
+import { poolConnectDB } from "../db/connect.js";
+const pool = poolConnectDB();
 export const filterData = (req, res, next) => {
     let dataObject = req.body;
     if (Array.isArray(dataObject)) {
@@ -40,7 +41,7 @@ export const verify  = (req,res,next) => {
 export const handleCheckRole = (req,res,next) => {
     const idUser = req.idUser;
     const sql = `SELECT * FROM login WHERE idUser = '${idUser}'`
-    con.query(sql,function(err,result){
+    pool.query(sql,function(err,result){
         if(err){
             res.status(500).json({message:'Server error'});
             return;

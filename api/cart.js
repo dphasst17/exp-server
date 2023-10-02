@@ -13,7 +13,12 @@ router.get('/',verify,(req,res) => {
             res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
             return;
         }
-        res.json(results)
+        res.status(200).json(results.map(e => {
+            return {
+                ...e,
+                detail:JSON.parse(e.detail)
+            }
+        }))
         
     })
 })

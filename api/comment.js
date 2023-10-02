@@ -33,11 +33,16 @@ router.get("/product/:idProduct", (req, res) => {
       });
       return;
     }
-    res.status(200).json(results);
+    res.status(200).json(results.map(e => {
+      return {
+        ...e,
+        detail:JSON.parse(e.detail)
+      }
+    }));
   });
 });
-router.post("/user", verify, (req, res) => {
-  const idUser = req.idUser;
+router.post("/user", verify, async (req, res) => {
+  const idUser = await req.idUser;
   const sql = sqlQuery.getCommentByIdUser(idUser);
   pool.query(sql, function (err, results) {
     if (err) {
@@ -46,7 +51,12 @@ router.post("/user", verify, (req, res) => {
       });
       return;
     }
-    res.status(200).json(results);
+    res.status(200).json(results.map(e => {
+      return {
+        ...e,
+        detail:JSON.parse(e.detail)
+      }
+    }));
   });
 });
 router.delete("/delete/:idComment", (req, res) => {

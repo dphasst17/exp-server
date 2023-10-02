@@ -8,7 +8,6 @@ import authRouter from "./user/auth.js";
 import userRouter from "./user/user.js";
 import commentRouter from "./api/comment.js"
 import {filterData,verify,handleCheckRole} from "./middleware/middleware.js";
-import jwt from "jsonwebtoken";
 import AWS from "aws-sdk";
 import fs from 'fs';
 import fileUpload from "express-fileupload";
@@ -70,7 +69,7 @@ app.use('/api/comment',commentRouter);
 app.use('/auth',authRouter);
 app.use('/user',userRouter);
 app.get('/restart', (req,res) => {
-    res.send("Restart success")
+    res.json("Restart success")
 })
 app.use(filterData);
 app.use(verify);

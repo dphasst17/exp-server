@@ -88,8 +88,10 @@ router.get("/type/:nameType", (req, res) => {
       }
       res.json(
         results.map((e) => {
-          delete e.id;
-          return e;
+          return {
+            ...e,
+            detail:JSON.parse(e.detail)
+          }
         })
       );
     });
@@ -109,8 +111,10 @@ router.get("/detail/get/:idType/:idProduct", (req, res) => {
     }
     res.json(
       results.map((e) => {
-        delete e.id;
-        return e;
+        return {
+          ...e,
+          detail:JSON.parse(e.detail)
+        }
       })
     );
   });

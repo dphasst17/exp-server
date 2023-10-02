@@ -1,6 +1,8 @@
 /* sql statement for cart table */
 export const getCartById = (idUser) => {
-    const sql = `SELECT c.*,p.nameProduct,p.price,p.imgProduct FROM carts c JOIN products p ON c.idProduct = p.idProduct WHERE idUser = '${idUser}'`;
+    const sql = `SELECT c.idUser,
+    CONCAT('[', GROUP_CONCAT(JSON_OBJECT('idCart',c.idCart,'idProduct', c.idProduct, 'nameProduct', p.nameProduct, 'price', p.price,'imgProduct',p.imgProduct)), ']') AS detail
+    FROM carts c JOIN products p ON c.idProduct = p.idProduct WHERE idUser = '${idUser}'`;
     return sql;
 }
 export const getProductInList = (list) => {
