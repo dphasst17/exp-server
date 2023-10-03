@@ -64,7 +64,10 @@ export const transportsSelectAll = () => {
     return sql;
 }
 export const transportsSelectOne = (idTrans) => {
-    const sql = `SELECT t.*,CONCAT('[',GROUP_CONCAT(JSON_OBJECT('idProduct',d.idProduct,'count',d.countProduct,'status',d.status)),']') AS detail FROM transports t JOIN transDetail d ON t.idTrans = d.idTrans WHERE t.idTrans = '${idTrans}' GROUP BY t.idTrans`;
+    const sql = `SELECT t.*,CONCAT('[',GROUP_CONCAT(JSON_OBJECT('idProduct',d.idProduct,'name',p.nameProduct,'price',p.price,'count',d.countProduct,'status',d.status)),']') AS detail FROM transports t 
+        LEFT JOIN transDetail d ON t.idTrans = d.idTrans
+        LEFT JOIN products p ON d.idProduct = p.idProduct 
+        WHERE t.idTrans = '${idTrans}' GROUP BY t.idTrans`;
     return sql;
 }
 export const transportsSelectList = (list) => {
