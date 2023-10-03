@@ -183,8 +183,7 @@ body:JSON.stringify(list:[This will contain the ids],...)
     * Insert multiple: `/list/insert` - method:'POST'
         * Body Data
             ```
-                body:JSON.stringify({list:[1,2,5,4,16],info:{name:'Name',phone:'0123456789',address:'your               
-                    address',costs:0.85,method:'credit card'}})
+                body:JSON.stringify({list:[{idProduct:1,count:2},{idProduct:15,count:2}],info{name:'Name',phone:'0123456789',address:'yourAddress',costs:0.85,method:'credit card'}})
             ```
     * Update status for one order: `/update/:idTrans` - method:'PATCH'
     * Update status for multiple order: `/list/update/:status` - method:'PATCH'

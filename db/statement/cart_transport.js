@@ -35,48 +35,48 @@ export const cartDeleteAll = (idUser) => {
 
 /* sql statement for transports table */
 
-export const transportInsert = (idUser,idProduct,count,name,phone,address,costs,method) => {
-    const sql = `INSERT INTO transports()VALUES('${idUser}',${idProduct},${count},'Chờ xác nhận','${name}','${phone}','${address}',${costs},'${method}')`;
+export const transportInsert = (idTrans,idUser,data) => {
+    const name = data.info.name;
+    const phone = data.info.phone;
+    const address = data.info.address;
+    const costs = data.info.costs;
+    const method = data.info.method;
+    const sql = `INSERT INTO transports(idTrans,idUser,fullName,phone,address,costs,method)VALUES('${idTrans}','${idUser}','${name}','${phone}','${address}',${costs},'${method}')`;
     return sql;
 }
-export const transportInsertInList = (idUser,data) => {
+export const transDetailInsert = (idTrans,idProduct,count) => {
+    const sql = `INSERT INTO transDetail(idTrans,idProduct,countProduct,status)VALUES('${idTrans}',${idProduct},${count},'Chờ xác nhận')`
+    return sql;
+}
+export const transDetailInsertInList = (idTrans,data) => {
     const list = data.list;
-    const info = data.info;
     const values = [];
-    for (const item of list) {
-        // Lấy ra idProduct và countProduct từ item
+    for(const item of list){
         const idProduct = item.idProduct;
         const countProduct = item.count;
-        // Lấy ra các giá trị cần thiết từ phần info
-        const nameUser = info.name;
-        const phone = info.phone;
-        const address = info.address;
-        const cost = info.costs;
-        const method = info.method;
-        // Thêm tập giá trị vào mảng values
-        values.push(`(${idProduct},'${idUser}', ${countProduct},'Chờ xác nhận', '${nameUser}', '${phone}', '${address}', ${cost}, '${method}')`);
+        values.push(`(${idTrans},${idProduct},${countProduct},'Chờ xác nhận')`)
     }
-    const sql = `INSERT INTO transports(idProduct,idUser,countProduct,status,fullName,phone,address,costs,method)VALUES${values.join(', ')}`
+    const sql = `INSERT INTO transports(idTrans,idProduct,countProduct,status) VALUES${values.join(', ')}`;
     return sql;
 }
 export const transportsSelectAll = () => {
-    const sql = `SELECT * FROM transports`;
+    const sql = `SELECT t.*,CONCAT('[',GROUP_CONCAT(JSON_OBJECT('idProduct',d.idProduct,'count',d.countProduct,'status',d.status)),']') AS detail FROM transports t JOIN transDetail d ON t.idTrans = d.idTrans GROUP BY t.idTrans`;
     return sql;
 }
 export const transportsSelectOne = (idTrans) => {
-    const sql = `SELECT * FROM transports WHERE idTrans = ${idTrans}`;
+    const sql = `SELECT t.*,CONCAT('[',GROUP_CONCAT(JSON_OBJECT('idProduct',d.idProduct,'count',d.countProduct,'status',d.status)),']') AS detail FROM transports t JOIN transDetail d ON t.idTrans = d.idTrans WHERE t.idTrans = '${idTrans}' GROUP BY t.idTrans`;
     return sql;
 }
 export const transportsSelectList = (list) => {
-    const sql = `SELECT * FROM transports WHERE idTrans IN (${list})`;
+    const sql = `SELECT t.*,CONCAT('[',GROUP_CONCAT(JSON_OBJECT('idProduct',d.idProduct,'count',d.countProduct,'status',d.status)),']') AS detail FROM transports t JOIN transDetail d ON t.idTrans = d.idTrans WHERE t.idTrans IN (${list}) GROUP BY t.idTrans`;
     return sql;
 }
 export const transportsUpdateStatusOne = (idTrans,status) => {
-    const sql = `UPDATE transports SET status = '${status}' WHERE idTrans = ${idTrans}`;
+    const sql = `UPDATE transDetail SET status = '${status}' WHERE idTrans = ${idTrans}`;
     return sql;
 }
 export const transportsUpdateList = (status,list) => {
-    const sql = `UPDATE transports SET status = '${status}' WHERE idTrans IN (${list})`;
+    const sql = `UPDATE transDetail SET status = '${status}' WHERE idTrans IN (${list})`;
     return sql;
 }
 export const transportsDeleteOne = (idTrans) => {

@@ -1,12 +1,14 @@
 import express from "express";
 import { poolConnectDB } from "../db/connect.js";
-import { transportsSelectAll,transportsSelectOne,transportsSelectList,transportInsert,transportInsertInList,transportsUpdateStatusOne,
-transportsUpdateList,transportsDeleteOne,transportsDeleteList} from "../db/statement/cart_transport.js";
+import { transportsSelectAll,transportsSelectOne,transportsSelectList,transportInsert,transportsUpdateStatusOne,
+transportsUpdateList,transportsDeleteOne,transportsDeleteList, transDetailInsertInList, transDetailInsert} from "../db/statement/cart_transport.js";
 import {billInsertOne,billInsertList} from "../db/statement/bills.js"
 import { verify,filterData } from "../middleware/middleware.js";
 const router = express.Router();
 const pool = poolConnectDB()
-
+let dateObj = new Date();
+let month = dateObj.getUTCMonth() + 1; //tháng từ 1-12
+let year = dateObj.getUTCFullYear();
 router.get('/',(req,res) => {
     const sql = transportsSelectAll();
     pool.query(sql,function(err,results){
@@ -14,7 +16,12 @@ router.get('/',(req,res) => {
             res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
             return;
         };
-        res.status(200).json(results);
+        res.status(200).json(results.map(e => {
+            return {
+                ...e,
+                detail:JSON.parse(e.detail)
+            }
+        }));
     })
 })
 router.get('/get/:idTrans',(req,res) => {
@@ -25,19 +32,32 @@ router.get('/get/:idTrans',(req,res) => {
             res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
             return;
         }
-        res.status(200).json(results);
+        res.status(200).json(results.map(e => {
+            return {
+                ...e,
+                detail: JSON.parse(e.detail)
+            }
+        }));
     })
 })
 router.post('/insert',verify,filterData,(req,res) => {
     const idUser = req.idUser;
     const data = req.result;
-    const sql = transportInsert(idUser,data.idProduct,data.count,data.name,data.phone,data.address,data.costs,data.method)
+    const idTrans = `${idUser}${month}${year}`
+    const sql = transportInsert(idTrans,idUser,data);
+    const sql2 = transDetailInsert(idTrans)
     pool.query(sql,function(err,results){
         if(err){
             res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
             return;
         }
-        res.status(201).json({message:'Insert success'});
+        pool.query(sql2,(err,results) => {
+            if(err){
+                res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+                return;
+            }
+            res.status(201).json({message:'Insert success'});
+        })
     })
 })
 router.patch('/update/:idTrans',filterData,(req,res) => {
@@ -65,27 +85,41 @@ router.delete('/delete/:idTrans',filterData,(req,res) => {
 })
 router.post('/list/get',filterData,(req,res) => {
     const data = req.result;
-    const cart_ids_str = data.list.join(",");
+    const cart_ids_str = data.list.map(id => `'${id}'`).join(",");
     const sql = transportsSelectList(cart_ids_str);
     pool.query(sql,function(err,results){
         if(err){
             res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
             return;
         }
-        res.status(200).json(results);
+        res.status(200).json(results.map(e => {
+            return {
+                ...e,
+                detail:JSON.parse(e.detail)
+            }
+        }));
     })
 })
 router.post('/list/insert',verify,filterData,(req,res) => {
     const idUser = req.idUser;
     const data = req.result;
-    const sql = transportInsertInList(idUser,data)
+    const idTrans = `${idUser}${month}${year}`
+    const sql2 = transDetailInsertInList(idTrans,data);
+    const sql = transportInsert(idTrans,idUser,data)
     pool.query(sql,function(err,results){
         if(err){
             res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
             return;
         }
-        res.status(201).json({message:'Insert to success'});
+        pool.query(sql2,(err,result) => {
+            if(err){
+                res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+                return;
+            }
+            res.status(201).json({message:'Insert to success'});
+        })
     })
+    res.json(sql);
 })
 router.patch('/list/update/:status',filterData,(req,res) => {
     let status;
@@ -153,6 +187,8 @@ router.post('/list/success',filterData,(req,res) => {
         res.status(201).json({message:'Success'});
     })
 })
-/* router.post('/fail',filterData,(req,res) => {}) */
+router.post('/fail',filterData,(req,res) => {
+    const data = req.result
+})
 
 export default router;

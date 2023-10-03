@@ -40,6 +40,40 @@ router.get('/role/diff/:role', (req, res) => {
         res.status(200).json(results);
     })
 })
+router.post('/address/add',verify,filterData,(req,res) => {
+    const idUser = req.idUser;
+    const data = req.result;
+    const sql = sqlQuery.addAddress(idUser,data.type,data.detail);
+    pool.query(sql,(err,results) => {
+        if (err) {
+            res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+            return;
+        }
+        res.status(201).json({message:'Success'});
+    })
+})
+router.patch('change/address/detail',filterData,(req,res) => {
+    const data = req.result;
+    const sql = sqlQuery.updateAddress(data.idAddress,data.detail);
+    pool.query(sql,(err,results) => {
+        if (err) {
+            res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+            return;
+        }
+        res.status(200).json({message:'Update success'});
+    })
+})
+router.patch('change/address/type',filterData,(req,res) => {
+    const data = req.result;
+    const sql = sqlQuery.updateTypeAddress(data.idAddress,data.type);
+    pool.query(sql,(err,results) => {
+        if (err) {
+            res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+            return;
+        }
+        res.status(200).json({message:'Update success'});
+    })
+})
 router.post('/change/info', verify, filterData, async (req, res) => {
     const idUser = req.idUser;
     const data = req.result;
