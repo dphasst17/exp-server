@@ -22,19 +22,7 @@ router.get('/',verify,(req,res) => {
         
     })
 })
-router.post('/pay',verify,filterData,(req,res) => {
-    const idUser = req.idUser;
-    const data = req.result;
-    const sql = transportInsertInList(idUser,data);
-    pool.query(sql,function(err,results){
-        if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
-            return;
-        }
-        res.status(200).json({message:'Success'})
-        
-    })
-})
+
 router.post('/add',verify,filterData,(req,res) => {
     const idUser = req.idUser;
     const data = req.result;
@@ -61,7 +49,7 @@ router.post('/list',filterData,(req,res) => {
         
     })
 })
-router.patch('/change',filterData,(req,res) => {
+router.patch('/update',filterData,(req,res) => {
     const data = req.result;
     const idCart = Number(data.cart);
     const count = Number(data.count)

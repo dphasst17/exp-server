@@ -1,13 +1,14 @@
 import express from "express";
 import { poolConnectDB } from "../db/connect.js";
-import { transportsSelectAll,transportsSelectOne,transportsSelectList,transportInsert,transportsUpdateStatusOne,
-transportsUpdateList,transportsDeleteOne,transportsDeleteList, transDetailInsertInList, transDetailInsert} from "../db/statement/cart_transport.js";
-import {billInsertOne,billInsertList} from "../db/statement/bills.js"
+import { transportsSelectAll,transportsSelectOne,transportInsert,
+ transDetailInsertInList, transDetailDeleteAll, transDetailDeleteOne, transportsDelete, 
+insertFailOrderDetail, insertFailOrder,checkCountProductInTrans, transDetailUpdateStatus} from "../db/statement/cart_transport.js";
+import {billsInsertOne, billDetailInsert} from "../db/statement/bills.js"
 import { verify,filterData } from "../middleware/middleware.js";
 const router = express.Router();
 const pool = poolConnectDB()
 let dateObj = new Date();
-let month = dateObj.getUTCMonth() + 1; //tháng từ 1-12
+let month = dateObj.getUTCMonth() + 1;
 let year = dateObj.getUTCFullYear();
 router.get('/',(req,res) => {
     const sql = transportsSelectAll();
@@ -43,9 +44,10 @@ router.get('/get/:idTrans',(req,res) => {
 router.post('/insert',verify,filterData,(req,res) => {
     const idUser = req.idUser;
     const data = req.result;
+    const listIdCart = data.listIdCart.join(",")
     const idTrans = `${idUser}${month}${year}`
-    const sql = transportInsert(idTrans,idUser,data);
-    const sql2 = transDetailInsert(idTrans)
+    const sql = transportInsert(idTrans,idUser,data.info);
+    const sql2 = transDetailInsertInList(listIdCart,idTrans)
     pool.query(sql,function(err,results){
         if(err){
             res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
@@ -63,7 +65,7 @@ router.post('/insert',verify,filterData,(req,res) => {
 router.patch('/update/:idTrans',filterData,(req,res) => {
     const idTrans = req.params['idTrans'];
     const data = req.result;
-    const sql = transportsUpdateStatusOne(idTrans,data.status);
+    const sql = transDetailUpdateStatus(idTrans,data.status);
     pool.query(sql,function(err,results){
         if(err){
             res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
@@ -72,123 +74,126 @@ router.patch('/update/:idTrans',filterData,(req,res) => {
         res.status(201).json({message:'Update success'});
     })
 })
-router.delete('/delete/:idTrans',filterData,(req,res) => {
+
+router.delete('/delete/all/:idTrans',filterData,(req,res) => {
     const idTrans = req.params['idTrans'];
-    const sql = transportsDeleteOne(idTrans);
+    const sql = transportsDelete(idTrans);
+    const sqlDetail = transDetailDeleteAll(idTrans)
     pool.query(sql,function(err,results){
         if(err){
             res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
             return;
         }
-        res.status(201).json({message:'Update success'});
-    })
-})
-router.post('/list/get',filterData,(req,res) => {
-    const data = req.result;
-    const cart_ids_str = data.list.map(id => `'${id}'`).join(",");
-    const sql = transportsSelectList(cart_ids_str);
-    pool.query(sql,function(err,results){
-        if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
-            return;
-        }
-        res.status(200).json(results.map(e => {
-            return {
-                ...e,
-                detail:JSON.parse(e.detail)
-            }
-        }));
-    })
-})
-router.post('/list/insert',verify,filterData,(req,res) => {
-    const idUser = req.idUser;
-    const data = req.result;
-    const idTrans = `${idUser}${month}${year}`
-    const sql2 = transDetailInsertInList(idTrans,data);
-    const sql = transportInsert(idTrans,idUser,data)
-    pool.query(sql,function(err,results){
-        if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
-            return;
-        }
-        pool.query(sql2,(err,result) => {
+        pool.query(sqlDetail,(err,results) => {
             if(err){
                 res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
                 return;
-            }
-            res.status(201).json({message:'Insert to success'});
+            } 
+            res.status(201).json({message:'Update success'});
         })
     })
-    res.json(sql);
 })
-router.patch('/list/update/:status',filterData,(req,res) => {
-    let status;
-    const param = req.params['status'];
-    switch(param){
-        case '1':
-            status = 'Chờ xác nhận';
-            break;
-        case '2':
-            status = 'Đang chuẩn bị đơn hàng'
-            break;
-        case '3':
-            status = 'Đang vận chuyển'
-            break;
-        default:
-            break;
-    }
+router.delete('/delete/detail',filterData,(req,res) => {
     const data = req.result;
-    const cart_ids_str = data.list.join(",");
-    const sql = transportsUpdateList(status,cart_ids_str);
-    pool.query(sql,function(err,results){
+    const idTrans = data.idTrans
+    const idTransDetail = data.idTransDetail.join(",");
+    const checkQuantity = checkCountProductInTrans(idTrans)
+    const sql = transDetailDeleteOne(idTransDetail);
+    pool.query(checkQuantity,(err,resultCheck) => {
         if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+            res.status(500).json({errCheck:err,message: "A server error occurred. Please try again in 5 minutes."});
             return;
         }
-        res.status(201).json({message:'Update success'});
+        let quantity = Number(resultCheck.flatMap(e => e.quantity))
+        pool.query(sql, (err,results) => {
+            if(err){
+                res.status(500).json({errQuery1:err,message: "A server error occurred. Please try again in 5 minutes."});
+                return;
+            }
+            if(quantity > 1){
+                res.json({message:"Delete to success"})
+            }else{
+                const sqlTrans = transportsDelete(idTrans)
+                pool.query(sqlTrans,(err,lastResult) => {
+                    if(err){
+                        res.status(500).json({errQuery2:err,message: "A server error occurred. Please try again in 5 minutes."});
+                        return;
+                    }
+                    res.json({message:"Delete to success"})
+                })
+            }
+        })  
     })
+
 })
-router.delete('/list/delete',filterData,(req,res) => {
-    const data = req.result;
-    const cart_ids_str = data.list.join(",");
-    const sql = transportsDeleteList(cart_ids_str);
-    pool.query(sql,function(err,results){
-        if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
-            return;
-        }
-        res.status(201).json({message:'Update success'});
-    })
-})
+
+
 router.post('/success',filterData,(req,res) => {
     const data = req.result;
     const idTrans = data.id;
-    const date = data.date
-    const sql = billInsertOne(idTrans,date);
+    const sql = billsInsertOne(idTrans);
+    const sqlDetail = billDetailInsert(idTrans)
     pool.query(sql,(err,results) => {
         if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+            res.status(500).json({errBill:err ,message: "A server error occurred. Please try again in 5 minutes."});
             return;
         }
-        res.status(201).json({message:'Success'});
+        pool.query(sqlDetail,(err,results) => {
+            if(err){
+                res.status(500).json({errBillDetail:err ,message: "A server error occurred. Please try again in 5 minutes."});
+                return;
+            }
+            const sqlDeleteDetail = transDetailDeleteAll(idTrans);
+            const sqlDelete = transportsDelete(idTrans);
+            pool.query(sqlDeleteDetail,(err,results) => {
+                if(err){
+                    res.status(500).json({errDel:err ,message: "A server error occurred. Please try again in 5 minutes."});
+                    return;
+                }
+                pool.query(sqlDelete,(err,resDetail) => {
+                    if(err){
+                        res.status(500).json({errDelDetail:err ,message: "A server error occurred. Please try again in 5 minutes."});
+                        return;
+                    }
+                    res.status(201).json({message:'Success'});
+                })
+            })
+        })
     })
 })
-router.post('/list/success',filterData,(req,res) => {
-    const data = req.result;
-    const listId = data.list
-    const date = data.date;
-    const newListId = listId.join(",")
-    const sql = billInsertList(newListId,date);
-    pool.query(sql,(err,results) => {
-        if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
-            return;
-        }
-        res.status(201).json({message:'Success'});
-    })
-})
+
 router.post('/fail',filterData,(req,res) => {
-    const data = req.result
+    const data = req.result;
+    const idTrans = data.id;
+    const sqlFail = insertFailOrder(idTrans);
+    const sqlFailDetail = insertFailOrderDetail(idTrans);
+    pool.query(sqlFail,(err,resFail) => {
+        if(err){
+            res.status(500).json({errFail:err,message: "A server error occurred. Please try again in 5 minutes."});
+            return;
+        }
+        pool.query(sqlFailDetail,(err,resFailDetail) => {
+            if(err){
+                res.status(500).json({errFailDetail:err,message: "A server error occurred. Please try again in 5 minutes."});
+                return;
+            }
+            const sqlDeleteDetail = transDetailDeleteAll(idTrans);
+            const sqlDelete = transportsDelete(idTrans);
+            pool.query(sqlDeleteDetail,(err,resDel) => {
+                if(err){
+                    res.status(500).json({errDel:err,message: "A server error occurred. Please try again in 5 minutes."});
+                    return;
+                }
+                pool.query(sqlDelete,(err,resDelDetail) => {
+                    if(err){
+                        res.status(500).json({errDelDetail:err,message: "A server error occurred. Please try again in 5 minutes."});
+                        return;
+                    }
+                    res.status(201).json({message:'Success'});
+                })
+            })
+        })
+    })
 })
 
 export default router;

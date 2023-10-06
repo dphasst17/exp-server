@@ -165,11 +165,6 @@ body:JSON.stringify(list:[This will contain the ids],...)
 - The endpoint for transports is started with: `/api/transports`
     * Get all transports: `/` - method:'GET'
     * Get transports by id: `/get/:idTrans` - method:'GET'
-    * Get transports in list: `/list/get` - method:'POST'
-        * Body Data
-            ```
-                body:JSON.stringify({list:[]})
-            ```
     * Insert one: `/insert` - method:'POST'
         * Body Data:
             ```
@@ -177,20 +172,10 @@ body:JSON.stringify(list:[This will contain the ids],...)
                     'Content-Type':'application/json',
                     'Authorization':'Bearer token'
                 }
-                body:JSON.stringify({idProduct:1,count:1,name:'Name',phone:'0123456789',address:'your 
-                    address',costs:0.85,method:'credit card'})
+                body:JSON.stringify({listIdCart:[1,2],info:{name:'Name',phone:'0123456789',address:'your 
+                    address',costs:0.85,method:'credit card'}})
             ```
-    * Insert multiple: `/list/insert` - method:'POST'
-        * Body Data
-            ```
-                body:JSON.stringify({list:[{idProduct:1,count:2},{idProduct:15,count:2}],info{name:'Name',phone:'0123456789',address:'yourAddress',costs:0.85,method:'credit card'}})
-            ```
-    * Update status for one order: `/update/:idTrans` - method:'PATCH'
-    * Update status for multiple order: `/list/update/:status` - method:'PATCH'
-        * Status 1 is : 'Chờ xác nhận'
-        * Status 2 is : 'Đang chuẩn bị đơn hàng'
-        * Status 3 is : 'Đang vận chuyển'
-    If the order is successfully shipped, data will be transferred from the transport table to the bills table
+    * Update status order: `/update/:idTrans` - method:'PATCH'
     * Insert data to bills table: `/success` - method:'POST'
         * Demo
         ```
@@ -208,6 +193,12 @@ body:JSON.stringify(list:[This will contain the ids],...)
         ```
             body:JSON.stringify({list:[1,4,16,20],date:'2023-09-05'})
         ```
+    * Delete all product in the order: `/delete/all/:idTrans` - method:'DELETE',
+    * Delete one or more products in an order: `/delete/detail` - method:'DELETE'
+        * Demo
+        ```
+        body:JSON.stringify({idTrans:'idTransDemo11',idTransDetail:[1,4]})
+        ``` 
 
 
 ### Comment

@@ -1,14 +1,20 @@
-//In case of successful order delivery
-export const billInsertOne = (idTrans,date) => {
-    const sql = `INSERT INTO bills(idUser,idProduct,dateBuy,countProduct,totalProduct) 
-    SELECT o.idUser,o.idProduct,('${date}')AS dateBuy,o.countProduct,(o.countProduct * p.price)AS totalProduct 
-    FROM transports o JOIN products p ON o.idProduct = p.idProduct WHERE idTrans = ${idTrans};`
+
+export const billsInsertOne = (idTrans) => {
+    const sql = `INSERT INTO bills(idBill,idUser,infoOrder,costs,total) 
+    SELECT t.idTrans,idUser,CONCAT('name:',fullName,' - phone: ',phone,' - address: ',address)AS infoOrder,costs,
+    SUM(d.countProduct * p.price * (1 - p.discount/100)) AS total 
+    FROM transports t 
+    LEFT JOIN transDetail d ON t.idTrans = d.idTrans 
+    LEFT JOIN products p ON d.idProduct = p.idProduct
+    WHERE t.idTrans = '${idTrans}';`
     return sql;
 }
-export const billInsertList = (list,date) => {
-    const sql = `INSERT INTO bills(idUser,idProduct,dateBuy,countProduct,totalProduct) 
-    SELECT o.idUser,o.idProduct,('${date}')AS dateBuy,o.countProduct,(o.countProduct * p.price)AS totalProduct 
-    FROM transports o JOIN products p ON o.idProduct = p.idProduct WHERE idTrans IN (${list});`
+
+export const billDetailInsert = (idTrans) => {
+    const sql = `INSERT INTO billDetail(idBill,idProduct,countProduct,discount,totalProduct)
+    SELECT d.idTrans,d.idProduct,d.countProduct,p.discount,(d.countProduct * p.price * (1 - p.discount/100)) AS total 
+    FROM transDetail d JOIN products p ON d.idProduct = p.idProduct
+    WHERE d.idTrans = '${idTrans}'`
     return sql;
 }
 export const billDeleteOne = (idBill) => {
@@ -23,4 +29,3 @@ export const revenue = () => {
     const sql = `SELECT b.idProduct,SUM(countProduct) AS count, SUM(totalProduct) AS total FROM bills b JOIN products p ON b.idProduct = p.idProduct;`
     return sql;
 }
-//In case of failure to ship an order
