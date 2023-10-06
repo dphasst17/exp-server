@@ -30,37 +30,37 @@ export const getDetail = (idType, idProduct) => {
     case "1":
       joinTable = "laptop l ON p.idProduct = l.idProduct";
       columnDetail = colDetail.laptop.map((e) => `'${e}',l.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(JSON_OBJECT(${columnDetail})),']') AS detail`;
+      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
       break;
     case "2":
       joinTable = "keyboard k ON p.idProduct = k.idProduct";
       columnDetail = colDetail.keyboard.map((e) => `'${e}',k.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(JSON_OBJECT(${columnDetail})),']') AS detail`;
+      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
       break;
     case "3":
       joinTable = "monitor mo ON p.idProduct = mo.idProduct";
       columnDetail = colDetail.monitor.map((e) => `'${e}',mo.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(JSON_OBJECT(${columnDetail})),']') AS detail`;
+      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
       break;
     case "4":
       joinTable = "ram r ON p.idProduct = r.idProduct";
       columnDetail = colDetail.ram.map((e) => `'${e}',r.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(JSON_OBJECT(${columnDetail})),']') AS detail`;
+      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
       break;
     case "5":
       joinTable = "harddrive h ON p.idProduct = h.idProduct";
       columnDetail = colDetail.storage.map((e) => `'${e}',h.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(JSON_OBJECT(${columnDetail})),']') AS detail`;
+      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
       break;
     case "6":
       joinTable = "vga v ON p.idProduct = v.idProduct";
       columnDetail = colDetail.vga.map((e) => `'${e}',v.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(JSON_OBJECT(${columnDetail})),']') AS detail`;
+      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
       break;
     case "7":
       joinTable = "mouse m ON p.idProduct = m.idProduct";
       columnDetail = colDetail.mouse.map((e) => `'${e}',m.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(JSON_OBJECT(${columnDetail})),']') AS detail`;
+      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
       break;
   }
   const sql = `SELECT p.*,t.nameType,
@@ -84,37 +84,37 @@ export const getProductByType = (idType) => {
     case 1:
       joinTable = "laptop l ON p.idProduct = l.idProduct";
       columnDetail = colDetail.laptop.map((e) => `'${e}',l.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(JSON_OBJECT(${columnDetail})),']') AS detail`;
+      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
       break;
     case 2:
       joinTable = "keyboard k ON p.idProduct = k.idProduct";
       columnDetail = colDetail.keyboard.map((e) => `'${e}',k.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(JSON_OBJECT(${columnDetail})),']') AS detail`;
+      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
       break;
     case 3:
       joinTable = "monitor mo ON p.idProduct = mo.idProduct";
       columnDetail = colDetail.monitor.map((e) => `'${e}',mo.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(JSON_OBJECT(${columnDetail})),']') AS detail`;
+      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
       break;
     case 4:
       joinTable = "ram r ON p.idProduct = r.idProduct";
       columnDetail = colDetail.ram.map((e) => `'${e}',r.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(JSON_OBJECT(${columnDetail})),']') AS detail`;
+      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
       break;
     case 5:
       joinTable = "harddrive h ON p.idProduct = h.idProduct";
       columnDetail = colDetail.storage.map((e) => `'${e}',h.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(JSON_OBJECT(${columnDetail})),']') AS detail`;
+      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
       break;
     case 6:
       joinTable = "vga v ON p.idProduct = v.idProduct";
       columnDetail = colDetail.vga.map((e) => `'${e}',v.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(JSON_OBJECT(${columnDetail})),']') AS detail`;
+      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
       break;
     case 7:
       joinTable = "mouse m ON p.idProduct = m.idProduct";
       columnDetail = colDetail.mouse.map((e) => `'${e}',m.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(JSON_OBJECT(${columnDetail})),']') AS detail`;
+      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
       break;
   }
   const sql = `SELECT p.*,t.nameType,

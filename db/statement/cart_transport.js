@@ -85,14 +85,14 @@ export const transDetailDeleteOne = (list) => {
     return sql;
 }
 export const insertFailOrder = (idTrans) => {
-    const sql = `INSERT INTO failorder(id_f_order,idUser,infoOrder)
+    const sql = `INSERT INTO failorder(idFail,idUser,infoOrder)
     SELECT t.idTrans,t.idUser,CONCAT('name:',t.fullName,' - phone: ',t.phone,' - address: ',t.address)AS infoOrder 
     FROM transports t JOIN transDetail d ON t.idTrans = d.idTrans
     WHERE d.idTrans = '${idTrans}'`;
     return sql;
 }
 export const insertFailOrderDetail = (idTrans) => {
-    const sql = `INSERT INTO failOrderDetail(id_f_order,idProduct,countProduct)
+    const sql = `INSERT INTO failOrderDetail(idFail,idProduct,countProduct)
     SELECT idTrans,idProduct,countProduct FROM transDetail WHERE idTrans = '${idTrans}'`;
     return sql;
 }

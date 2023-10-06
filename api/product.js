@@ -87,12 +87,12 @@ router.get("/type/:nameType", (req, res) => {
         return;
       }
       res.json(
-        results.map((e) => {
+        Array.from(new Set(results.map((e) => {
           return {
             ...e,
             detail:JSON.parse(e.detail)
           }
-        })
+        })))
       );
     });
   }
@@ -113,7 +113,7 @@ router.get("/detail/get/:idType/:idProduct", (req, res) => {
       results.map((e) => {
         return {
           ...e,
-          detail:JSON.parse(e.detail)
+          detail:JSON.parse(e.detail)/* JSON.parse(Array.from(new Set(e.detail))) */
         }
       })
     );
