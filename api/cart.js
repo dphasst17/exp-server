@@ -10,7 +10,10 @@ router.get('/',verify,(req,res) => {
     const sql = getCartById(idUser)
     pool.query(sql,function(err,results){
         if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes."
+            });
             return;
         }
         res.status(200).json(results.map(e => {
@@ -29,7 +32,10 @@ router.post('/add',verify,filterData,(req,res) => {
     const sql = cartInsert(data.id,idUser,data.count)
     pool.query(sql,function(err,results){
         if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes."
+            });
             return;
         }
         res.status(201).json({message:'Add product to cart success'})
@@ -42,7 +48,10 @@ router.post('/list',filterData,(req,res) => {
     const sql = getProductInList(cart_ids_str)
     pool.query(sql,function(err,results){
         if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes."
+            });
             return;
         }
         res.json(results)
@@ -56,7 +65,10 @@ router.patch('/update',filterData,(req,res) => {
     const sql = cartUpdate(idCart,count)
     pool.query(sql,function(err,results){
         if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes."
+            });
             return;
         }
         res.json({message:'Update cart is success'});
@@ -69,7 +81,10 @@ router.delete('/delete/:idCart',filterData, (req, res) => {
     const sql = cartDeleteOne(idCart)
     pool.query(sql,function(err,results){
         if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes."
+            });
             return;
         }
         res.json({ message: "Delete "+idCart+" success" });
@@ -81,7 +96,10 @@ router.delete('/delete',verify,(req,res) => {
     const sql = cartDeleteAll(idUser)
     pool.query(sql,function(err,results){
         if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes."
+            });
             return;
         }
         res.json({ message: "Delete cart is success" });
@@ -94,7 +112,10 @@ router.delete('/list/delete',filterData,(req,res) => {
     const sql = cartDeleteList(cart_ids_str)
     pool.query(sql,function(err,results){
         if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes."
+            });
             return;
         }
         res.json({ message: "Deleting cart products is successful" });

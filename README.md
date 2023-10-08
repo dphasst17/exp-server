@@ -113,7 +113,7 @@ body:JSON.stringify(list:[This will contain the ids],...)
                 'Content-Type':'application/json'
             },
             body:JSON.stringify({folder:'product',
-                product:['Msi Bravo',1200,'url from web or image from folder','2023-09- 05',1,'msi'],
+                product:['Msi Bravo',1200,'image name (img.png || img.jpeg) from folder','2023-09- 05',1,'msi'],
                 detail:['Amd','16GB',32,'512GB','Windows 11 Home','1920x1080',15.6,'53Wh','Vỏ nhựa']
             })
         })
@@ -129,7 +129,11 @@ body:JSON.stringify(list:[This will contain the ids],...)
             headers:{
                 'Content-Type':'application/json'
             },
-            body:JSON.stringify(['AMD Ryzen 5','16GB',64,'512GB','Windows 11 Home','1920x1080',15.6,'53Wh','Vỏ nhựa'])
+            body:JSON.stringify({
+                folder:'product',
+                product:['Msi Bravo',1200,'old url image or new image name (img.png || img.jpeg) from folder','2023-09- 05',1,'msi'],
+                detail:['Amd','16GB',32,'512GB','Windows 11 Home','1920x1080',15.6,'53Wh','Vỏ nhựa']
+            })
         })
         ```
     * Delete product: `/delete/:idProduct` - method:'DELETE'

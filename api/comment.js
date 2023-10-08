@@ -10,6 +10,7 @@ router.get("/", (req, res) => {
   pool.query(sql, function (err, results) {
     if (err) {
       res.status(500).json({
+        status:500,
         message: "A server error occurred. Please try again in 5 minutes.",
       });
       return;
@@ -29,6 +30,7 @@ router.get("/product/:idProduct", (req, res) => {
   pool.query(sql, function (err, results) {
     if (err) {
       res.status(500).json({
+        status:500,
         message: "A server error occurred. Please try again in 5 minutes.",
       });
       return;
@@ -47,6 +49,7 @@ router.post("/user", verify, async (req, res) => {
   pool.query(sql, function (err, results) {
     if (err) {
       res.status(500).json({
+        status:500,
         message: "A server error occurred. Please try again in 5 minutes.",
       });
       return;
@@ -65,6 +68,7 @@ router.delete("/delete/:idComment", (req, res) => {
   pool.query(sql, (err, results) => {
     if (err) {
       res.status(500).json({
+        status:500,
         message: "A server error occurred. Please try again in 5 minutes.",
       });
       return;
@@ -79,6 +83,7 @@ router.delete("/list/delete", filterData, (req, res) => {
   pool.query(sql, (err, results) => {
     if (err) {
       res.status(500).json({
+        status:500,
         message: "A server error occurred. Please try again in 5 minutes.",
       });
       return;

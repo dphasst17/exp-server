@@ -13,7 +13,10 @@ const updateLogin = (idUser, token) => {
     const sql = `UPDATE login SET rfToken = '${token}' WHERE idUser = '${idUser}'`;
     pool.query(sql, function (err, results) {
         if (err) {
-            res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes." 
+            });
             return;
         }
     })
@@ -43,7 +46,10 @@ const handleRegister = (...props) => {
     const newSql = props[2] === "u" ? sqlQuery.register(props[0], props[0], pass_hash, props[2]) : sqlQuery.register(props[4], props[0], pass_hash, props[2])
     pool.query(newSql, function (err, results) {
         if (err) {
-            res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes." 
+            });
             return;
         }
         let insertData = props[2] === "u" ? sqlQuery.insertUserTypeU(props[0]) : sqlQuery.insertUserTypeE(props[4], props[3], props[0])
@@ -60,7 +66,10 @@ router.post('/register', filterData, (req, res) => {
     const sql = sqlQuery.login(username)
     pool.query(sql, function (err, results) {
         if (err) {
-            res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes." 
+            });
             return;
         }
         if (results.length !== 0) {
@@ -85,7 +94,10 @@ router.post('/login', filterData, (req, res) => {
         const sql = sqlQuery.login(email);
         pool.query(sql, function (err, results) {
             if (err) {
-                res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+                res.status(500).json({
+                    status:500,
+                    message: "A server error occurred. Please try again in 5 minutes." 
+                });
                 return;
             }
             if (results.length === 0) {
@@ -104,7 +116,10 @@ router.post('/login', filterData, (req, res) => {
         const sql = sqlQuery.login(id);
         pool.query(sql, function (err, results) {
             if (err) {
-                res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+                res.status(500).json({
+                    status:500,
+                    message: "A server error occurred. Please try again in 5 minutes." 
+                });
                 return;
             }
             const pass_hash = results.map(e => e.password_hash).toString()
@@ -134,7 +149,10 @@ router.post('/new/token', verify, (req, res) => {
     const sql = `SELECT rfToken FROM login WHERE idUser = '${idUser}'`;
     pool.query(sql, function (err, results) {
         if (err) {
-            res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes." 
+            });
             return;
         }
         results.map(e => {

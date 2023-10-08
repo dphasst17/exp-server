@@ -14,7 +14,10 @@ router.get('/',(req,res) => {
     const sql = transportsSelectAll();
     pool.query(sql,function(err,results){
         if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes."
+            });
             return;
         };
         res.status(200).json(results.map(e => {
@@ -30,7 +33,10 @@ router.get('/get/:idTrans',(req,res) => {
     const sql = transportsSelectOne(idTrans);
     pool.query(sql,function(err,results){
         if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes."
+            });
             return;
         }
         res.status(200).json(results.map(e => {
@@ -50,12 +56,18 @@ router.post('/insert',verify,filterData,(req,res) => {
     const sql2 = transDetailInsertInList(listIdCart,idTrans)
     pool.query(sql,function(err,results){
         if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes."
+            });
             return;
         }
         pool.query(sql2,(err,results) => {
             if(err){
-                res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+                res.status(500).json({
+                    status:500,
+                    message: "A server error occurred. Please try again in 5 minutes."
+                });
                 return;
             }
             res.status(201).json({message:'Insert success'});
@@ -68,7 +80,10 @@ router.patch('/update/:idTrans',filterData,(req,res) => {
     const sql = transDetailUpdateStatus(idTrans,data.status);
     pool.query(sql,function(err,results){
         if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes."
+            });
             return;
         }
         res.status(201).json({message:'Update success'});
@@ -81,12 +96,18 @@ router.delete('/delete/all/:idTrans',filterData,(req,res) => {
     const sqlDetail = transDetailDeleteAll(idTrans)
     pool.query(sql,function(err,results){
         if(err){
-            res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes."
+            });
             return;
         }
         pool.query(sqlDetail,(err,results) => {
             if(err){
-                res.status(500).json({message: "A server error occurred. Please try again in 5 minutes."});
+                res.status(500).json({
+                    status:500,
+                    message: "A server error occurred. Please try again in 5 minutes."
+                });
                 return;
             } 
             res.status(201).json({message:'Update success'});
@@ -101,13 +122,19 @@ router.delete('/delete/detail',filterData,(req,res) => {
     const sql = transDetailDeleteOne(idTransDetail);
     pool.query(checkQuantity,(err,resultCheck) => {
         if(err){
-            res.status(500).json({errCheck:err,message: "A server error occurred. Please try again in 5 minutes."});
+            res.status(500).json({
+                status:500,
+                errCheck:err,message: "A server error occurred. Please try again in 5 minutes."
+            });
             return;
         }
         let quantity = Number(resultCheck.flatMap(e => e.quantity))
         pool.query(sql, (err,results) => {
             if(err){
-                res.status(500).json({errQuery1:err,message: "A server error occurred. Please try again in 5 minutes."});
+                res.status(500).json({
+                    status:500,
+                    errQuery1:err,message: "A server error occurred. Please try again in 5 minutes."
+                });
                 return;
             }
             if(quantity > 1){
@@ -116,7 +143,10 @@ router.delete('/delete/detail',filterData,(req,res) => {
                 const sqlTrans = transportsDelete(idTrans)
                 pool.query(sqlTrans,(err,lastResult) => {
                     if(err){
-                        res.status(500).json({errQuery2:err,message: "A server error occurred. Please try again in 5 minutes."});
+                        res.status(500).json({
+                            status:500,
+                            errQuery2:err,message: "A server error occurred. Please try again in 5 minutes."
+                        });
                         return;
                     }
                     res.json({message:"Delete to success"})
@@ -135,24 +165,36 @@ router.post('/success',filterData,(req,res) => {
     const sqlDetail = billDetailInsert(idTrans)
     pool.query(sql,(err,results) => {
         if(err){
-            res.status(500).json({errBill:err ,message: "A server error occurred. Please try again in 5 minutes."});
+            res.status(500).json({
+                status:500,
+                errBill:err ,message: "A server error occurred. Please try again in 5 minutes."
+            });
             return;
         }
         pool.query(sqlDetail,(err,results) => {
             if(err){
-                res.status(500).json({errBillDetail:err ,message: "A server error occurred. Please try again in 5 minutes."});
+                res.status(500).json({
+                    status:500,
+                    errBillDetail:err ,message: "A server error occurred. Please try again in 5 minutes."
+                });
                 return;
             }
             const sqlDeleteDetail = transDetailDeleteAll(idTrans);
             const sqlDelete = transportsDelete(idTrans);
             pool.query(sqlDeleteDetail,(err,results) => {
                 if(err){
-                    res.status(500).json({errDel:err ,message: "A server error occurred. Please try again in 5 minutes."});
+                    res.status(500).json({
+                        status:500,
+                        errDel:err ,message: "A server error occurred. Please try again in 5 minutes."
+                    });
                     return;
                 }
                 pool.query(sqlDelete,(err,resDetail) => {
                     if(err){
-                        res.status(500).json({errDelDetail:err ,message: "A server error occurred. Please try again in 5 minutes."});
+                        res.status(500).json({
+                            status:500,
+                            errDelDetail:err ,message: "A server error occurred. Please try again in 5 minutes."
+                        });
                         return;
                     }
                     res.status(201).json({message:'Success'});
@@ -169,24 +211,36 @@ router.post('/fail',filterData,(req,res) => {
     const sqlFailDetail = insertFailOrderDetail(idTrans);
     pool.query(sqlFail,(err,resFail) => {
         if(err){
-            res.status(500).json({errFail:err,message: "A server error occurred. Please try again in 5 minutes."});
+            res.status(500).json({
+                status:500,
+                errFail:err,message: "A server error occurred. Please try again in 5 minutes."
+            });
             return;
         }
         pool.query(sqlFailDetail,(err,resFailDetail) => {
             if(err){
-                res.status(500).json({errFailDetail:err,message: "A server error occurred. Please try again in 5 minutes."});
+                res.status(500).json({
+                    status:500,
+                    errFailDetail:err,message: "A server error occurred. Please try again in 5 minutes."
+                });
                 return;
             }
             const sqlDeleteDetail = transDetailDeleteAll(idTrans);
             const sqlDelete = transportsDelete(idTrans);
             pool.query(sqlDeleteDetail,(err,resDel) => {
                 if(err){
-                    res.status(500).json({errDel:err,message: "A server error occurred. Please try again in 5 minutes."});
+                    res.status(500).json({
+                        status:500,
+                        errDel:err,message: "A server error occurred. Please try again in 5 minutes."
+                    });
                     return;
                 }
                 pool.query(sqlDelete,(err,resDelDetail) => {
                     if(err){
-                        res.status(500).json({errDelDetail:err,message: "A server error occurred. Please try again in 5 minutes."});
+                        res.status(500).json({
+                            status:500,
+                            errDelDetail:err,message: "A server error occurred. Please try again in 5 minutes."
+                        });
                         return;
                     }
                     res.status(201).json({message:'Success'});

@@ -12,7 +12,10 @@ router.post('/', verify, (req, res) => {
     const sql = sqlQuery.getUser(idUser)
     pool.query(sql, function (err, results) {
         if (err) {
-            res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+            res.status(500).json({ 
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes." 
+            });
             return;
         }
         res.json(results);
@@ -23,7 +26,10 @@ router.get('/role/:role', (req, res) => {
     const sql = sqlQuery.getRole(role);
     pool.query(sql, (err, results) => {
         if (err) {
-            res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+            res.status(500).json({ 
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes." 
+            });
             return;
         }
         res.status(200).json(results);
@@ -34,7 +40,10 @@ router.get('/role/diff/:role', (req, res) => {
     const sql = sqlQuery.getRoleDifferent(role);
     pool.query(sql, (err, results) => {
         if (err) {
-            res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+            res.status(500).json({ 
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes." 
+            });
             return;
         }
         res.status(200).json(results);
@@ -46,7 +55,10 @@ router.post('/address/add',verify,filterData,(req,res) => {
     const sql = sqlQuery.addAddress(idUser,data.type,data.detail);
     pool.query(sql,(err,results) => {
         if (err) {
-            res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+            res.status(500).json({ 
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes." 
+            });
             return;
         }
         res.status(201).json({message:'Success'});
@@ -57,7 +69,10 @@ router.patch('change/address/detail',filterData,(req,res) => {
     const sql = sqlQuery.updateAddress(data.idAddress,data.detail);
     pool.query(sql,(err,results) => {
         if (err) {
-            res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+            res.status(500).json({ 
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes." 
+            });
             return;
         }
         res.status(200).json({message:'Update success'});
@@ -68,7 +83,10 @@ router.patch('change/address/type',filterData,(req,res) => {
     const sql = sqlQuery.updateTypeAddress(data.idAddress,data.type);
     pool.query(sql,(err,results) => {
         if (err) {
-            res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+            res.status(500).json({ 
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes." 
+            });
             return;
         }
         res.status(200).json({message:'Update success'});
@@ -80,7 +98,10 @@ router.post('/change/info', verify, filterData, async (req, res) => {
     const sql = sqlQuery.changeUser(idUser, data.name, data.email, data.phone)
     pool.query(sql, function (err, results) {
         if (err) {
-            res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+            res.status(500).json({ 
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes." 
+            });
             return;
         }
         res.status(200).json('User updated successfully');
@@ -92,7 +113,10 @@ router.post('/change/role/:newRole', verify, handleCheckRole, filterData, (req, 
     const sql = sqlQuery.changeUser(data.idUser, newRole)
     pool.query(sql, function (err, results) {
         if (err) {
-            res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+            res.status(500).json({ 
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes." 
+            });
             return;
         }
         res.status(200).json('Change role successfully');
@@ -105,7 +129,10 @@ router.post('/change/list/role/:newRole', verify, handleCheckRole, filterData, (
     const sql = sqlQuery.changeRoleInList(user_id_str, newRole)
     pool.query(sql, function (err, results) {
         if (err) {
-            res.status(500).json({ message: "A server error occurred. Please try again in 5 minutes." });
+            res.status(500).json({ 
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes." 
+            });
             return;
         }
         res.status(200).json('Change role successfully');

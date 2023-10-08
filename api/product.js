@@ -13,6 +13,7 @@ router.get("/search/:keyword", (req, res) => {
   pool.query(sql, function (err, results) {
     if (err) {
       res.status(500).json({
+        status:500,
         message: "A server error occurred. Please try again in 5 minutes.",
       });
       return;
@@ -26,6 +27,7 @@ router.get("/", (req, res) => {
   pool.query(sql, function (err, results) {
     if (err) {
       res.status(500).json({
+        status:500,
         message: "A server error occurred. Please try again in 5 minutes.",
       });
       return;
@@ -39,6 +41,7 @@ router.get("/new", (req, res) => {
   pool.query(sql, function (err, results) {
     if (err) {
       res.status(500).json({
+        status:500,
         message: "A server error occurred. Please try again in 5 minutes.",
       });
       return;
@@ -82,6 +85,7 @@ router.get("/type/:nameType", (req, res) => {
     pool.query(sql, function (err, results) {
       if (err) {
         res.status(500).json({
+          status:500,
           message: "A server error occurred. Please try again in 5 minutes.",
         });
         return;
@@ -105,6 +109,7 @@ router.get("/detail/get/:idType/:idProduct", (req, res) => {
   pool.query(sql, function (err, results) {
     if (err) {
       res.status(500).json({
+        status:500,
         message: "A server error occurred. Please try again in 5 minutes.",
       });
       return;
@@ -113,7 +118,7 @@ router.get("/detail/get/:idType/:idProduct", (req, res) => {
       results.map((e) => {
         return {
           ...e,
-          detail:JSON.parse(e.detail)/* JSON.parse(Array.from(new Set(e.detail))) */
+          detail:JSON.parse(e.detail)
         }
       })
     );
@@ -173,24 +178,36 @@ router.put("/update/:idProduct", filterData, (req, res) => {
   const data = req.result;
   const idProduct = req.params["idProduct"];
   const folder = data.folder;
-  const resultProduct = data.product
+  const product = data.product
     .map((e, i) => {
       if (i === 2) {
-        return "'" + process.env.AWS_URL_IMG + "/" + folder + "/" + e + "'";
+        return e.includes('https://') ? e : "'" + process.env.AWS_URL_IMG + "/" + folder + "/" + e + "'";
       } else {
         return /[a-zA-Z]/.test(e) ? "'" + e + "'" : e;
       }
     })
     .toString();
-  const sql = sqlQuery.productUpdate(idProduct, resultProduct);
+  const detail = data.detail;
+  const idType = product[4]
+  const sql = sqlQuery.productUpdate(idProduct, product);
+  const sqlDetail = sqlQuery.productUpdateDetail(idType,idProduct,detail)
   pool.query(sql, (err, results) => {
     if (err) {
       res.status(500).json({
+        status:500,
         message: "A server error occurred. Please try again in 5 minutes.",
       });
       return;
     }
-    res.status(204).json({ message: "Update to success" });
+    pool.query(sqlDetail,(err,results) => {
+      if (err) {
+        res.status(500).json({status:500,
+          message: "A server error occurred. Please try again in 5 minutes.",
+        });
+        return;
+      }
+      res.status(204).json({ message: "Update to success" });
+    })
   });
 });
 router.put("/detail/update/:idType/:idProduct", filterData, (req, res) => {
@@ -208,6 +225,7 @@ router.put("/detail/update/:idType/:idProduct", filterData, (req, res) => {
   pool.query(sql, (err, results) => {
     if (err) {
       res.status(500).json({
+        status:500,
         message: "A server error occurred. Please try again in 5 minutes.",
       });
       return;
@@ -221,6 +239,7 @@ router.delete("/delete/:idProduct", filterData, (req, res) => {
   pool.query(sql, (err, results) => {
     if (err) {
       res.status(500).json({
+        status:500,
         message: "A server error occurred. Please try again in 5 minutes.",
       });
       return;
@@ -235,6 +254,7 @@ router.delete("/list/delete", filterData, (req, res) => {
   pool.query(sql, (err, results) => {
     if (err) {
       res.status(500).json({
+        status:500,
         message: "A server error occurred. Please try again in 5 minutes.",
       });
       return;
