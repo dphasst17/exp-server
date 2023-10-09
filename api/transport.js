@@ -2,7 +2,7 @@ import express from "express";
 import { poolConnectDB } from "../db/connect.js";
 import { transportsSelectAll,transportsSelectOne,transportInsert,
  transDetailInsertInList, transDetailDeleteAll, transDetailDeleteOne, transportsDelete, 
-insertFailOrderDetail, insertFailOrder,checkCountProductInTrans, transDetailUpdateStatus} from "../db/statement/cart_transport.js";
+insertFailOrderDetail, insertFailOrder,checkCountProductInTrans, transDetailUpdateStatus, transportsSelectByUser} from "../db/statement/cart_transport.js";
 import {billsInsertOne, billDetailInsert} from "../db/statement/bills.js"
 import { verify,filterData } from "../middleware/middleware.js";
 const router = express.Router();
@@ -45,6 +45,20 @@ router.get('/get/:idTrans',(req,res) => {
                 detail: JSON.parse(e.detail)
             }
         }));
+    })
+})
+router.get('/user/get',verify,(req,res) => {
+    const idUser = req.idUser;
+    const sql = transportsSelectByUser(idUser);
+    pool.query(sql,(err,results) => {
+        if(err){
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes."
+            });
+            return;
+        }
+        res.status(200).json(results)
     })
 })
 router.post('/insert',verify,filterData,(req,res) => {

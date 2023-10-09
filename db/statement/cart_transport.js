@@ -68,6 +68,13 @@ export const transportsSelectOne = (idTrans) => {
         WHERE t.idTrans = '${idTrans}' GROUP BY t.idTrans`;
     return sql;
 }
+export const transportsSelectByUser = (idUser) => {
+    const sql = `SELECT t.*,CONCAT('[',GROUP_CONCAT(JSON_OBJECT('idTransDetail',d.idTransDetail,'idProduct',d.idProduct,'name',p.nameProduct,'price',p.price,'count',d.countProduct,'status',d.status)),']') AS detail FROM transports t 
+        LEFT JOIN transDetail d ON t.idTrans = d.idTrans
+        LEFT JOIN products p ON d.idProduct = p.idProduct 
+        WHERE t.idUser = '${idUser}' GROUP BY t.idTrans`;
+    return sql;
+}
 export const transDetailUpdateStatus = (status,idTrans) => {
     const sql = `UPDATE transDetail SET status = '${status}' WHERE idTrans = '${idTrans}';`
     return sql;

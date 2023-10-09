@@ -179,6 +179,12 @@ body:JSON.stringify(list:[This will contain the ids],...)
                     address',costs:0.85,method:'credit card'}})
             ```
     * Update status order: `/update/:idTrans` - method:'PATCH'
+    * Delete all product in the order: `/delete/all/:idTrans` - method:'DELETE',
+    * Delete one or more products in an order: `/delete/detail` - method:'DELETE'
+        * Demo
+        ```
+        body:JSON.stringify({idTrans:'idTransDemo11',idTransDetail:[1,4]})
+        ``` 
     * Insert data to bills table: `/success` - method:'POST'
         * Demo
         ```
@@ -187,21 +193,20 @@ body:JSON.stringify(list:[This will contain the ids],...)
             headers:{
                 'Content-Type':'application/json'
             },
-            body:JSON.stringify({id:'2',date:'2023-09-05'})
+            body:JSON.stringify({id:'idTransDemo1'})
         })
         ```
-    * If you want to add multiple orders to the bills table or successfully deliver multiple orders at the same time,
-        there is the following endpoint:`/list/success` - method:'PATCH'
-        * Body Data
-        ```
-            body:JSON.stringify({list:[1,4,16,20],date:'2023-09-05'})
-        ```
-    * Delete all product in the order: `/delete/all/:idTrans` - method:'DELETE',
-    * Delete one or more products in an order: `/delete/detail` - method:'DELETE'
+    * Insert data to failOrder table: `/fail` - method:'POST'
         * Demo
         ```
-        body:JSON.stringify({idTrans:'idTransDemo11',idTransDetail:[1,4]})
-        ``` 
+        fetch('http://localhost:1705/api/transports/fail',{
+            method:'POST',
+            headers:{
+                'Content-Type':'application/json'
+            },
+            body:JSON.stringify({id:'idTransDemo1'})
+        })
+        ```
 
 
 ### Comment
