@@ -118,13 +118,12 @@ body:JSON.stringify(list:[This will contain the ids],...)
             })
         })
         ```
-    * Update product: `/update/:idProduct` - method:'PUT' - (Update basic product information || Cập nhật thông tin cơ bản của sản phẩm.)
-    * Update product detail: `/detail/update/:idType/:idProduct` - method:'PUT' - (Update detailed product information|| Cập nhật thông tin chi tiết của sản phẩm)
+    * Update product: `/update/:idType/:idProduct` - method:'PUT' - (Update basic product information || Cập nhật thông tin cơ bản của sản phẩm.)
         The data update part of product details you need to enter in order from top to bottom according to the corresponding table as shown in the image above.
         * Demo:
         Update data for a product whose type is 1 corresponding to the laptop table
         ```
-        fetch('http://localhost:1705/api/product/detail/update/1/21',{
+        fetch('http://localhost:1705/api/product/update/1/21',{
             method:'PUT',
             headers:{
                 'Content-Type':'application/json'

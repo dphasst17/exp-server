@@ -174,9 +174,10 @@ router.post("/insert", filterData, (req, res) => {
   queryCheck === true && res.status(201).json({ message: "Add product to success" });
 });
 
-router.put("/update/:idProduct", filterData, (req, res) => {
+router.put("/update/:idType/:idProduct", filterData, (req, res) => {
   const data = req.result;
   const idProduct = req.params["idProduct"];
+  const idType = req.params["idType"]
   const folder = data.folder;
   const product = data.product
     .map((e, i) => {
@@ -188,7 +189,6 @@ router.put("/update/:idProduct", filterData, (req, res) => {
     })
     .toString();
   const detail = data.detail;
-  const idType = product[4]
   const sql = sqlQuery.productUpdate(idProduct, product);
   const sqlDetail = sqlQuery.productUpdateDetail(idType,idProduct,detail)
   pool.query(sql, (err, results) => {
@@ -208,29 +208,6 @@ router.put("/update/:idProduct", filterData, (req, res) => {
       }
       res.status(204).json({ message: "Update to success" });
     })
-  });
-});
-router.put("/detail/update/:idType/:idProduct", filterData, (req, res) => {
-  const data = req.result;
-  const idType = req.params["idType"];
-  const idProduct = req.params["idProduct"];
-  const resultDetail = data.detail.map((e) => {
-    if (/[a-zA-Z]/.test(item)) {
-      return "'" + item + "'";
-    } else {
-      return item;
-    }
-  });
-  const sql = sqlQuery.productUpdateDetail(idType, idProduct, resultDetail);
-  pool.query(sql, (err, results) => {
-    if (err) {
-      res.status(500).json({
-        status:500,
-        message: "A server error occurred. Please try again in 5 minutes.",
-      });
-      return;
-    }
-    res.status(204).json({ message: "Update product to success" });
   });
 });
 router.delete("/delete/:idProduct", filterData, (req, res) => {
