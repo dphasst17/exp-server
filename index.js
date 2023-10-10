@@ -6,7 +6,8 @@ import transRouter from "./api/transport.js";
 import wareRouter from "./api/warehouse.js"
 import authRouter from "./user/auth.js";
 import userRouter from "./user/user.js";
-import commentRouter from "./api/comment.js"
+import commentRouter from "./api/comment.js";
+import statisticalRouter from "./api/statistical.js"
 import {filterData,verify,handleCheckRole} from "./middleware/middleware.js";
 import AWS from "aws-sdk";
 import fs from 'fs';
@@ -61,11 +62,15 @@ app.post('/upload/:folder',async (req, res) => {
     res.status(500).json(err)
   }
 }); 
-app.use('/api/product', productRouter);
-app.use('/api/cart', cartRouter);
-app.use('/api/transports', transRouter);
-app.use('/api/ware', wareRouter);
-app.use('/api/comment',commentRouter);
+const routerArr = [
+  {path:'product',routes:productRouter},
+  {path:'cart',routes:cartRouter},
+  {path:'transports',routes:transRouter},
+  {path:'comment',routes:commentRouter},
+  {path:'ware',routes:wareRouter},
+  {path:'statistical',routes:statisticalRouter},
+]
+routerArr.map(e => app.use(`/api/${e.path}`,e.routes))
 app.use('/auth',authRouter);
 app.use('/user',userRouter);
 app.get('/restart', (req,res) => {
