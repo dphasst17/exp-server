@@ -7,7 +7,7 @@ export const bestselling = () => {
     return sql;
 }
 export const topView = () => {
-    const sql = `SELECT * FROM products ORDER BY view DESC LIMIT 0,7;`;
+    const sql = `SELECT p.*,t.nameType FROM products p JOIN type t ON p.idType = t.idType ORDER BY view DESC LIMIT 0,7;`;
     return sql;
 }
 export const revenue_by_type = () => {
