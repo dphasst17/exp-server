@@ -3,11 +3,11 @@ export const bestselling = () => {
     FROM billDetail h 
     JOIN products p ON h.idProduct = p.idProduct 
     JOIN type t ON t.idType = p.idType 
-    GROUP BY idProduct ORDER BY SUM(countProduct) DESC LIMIT 0,5;`;
+    GROUP BY idProduct ORDER BY SUM(countProduct) DESC LIMIT 0,7;`;
     return sql;
 }
 export const topView = () => {
-    const sql = `SELECT * FROM products ORDER BY view DESC LIMIT 0,5;`;
+    const sql = `SELECT * FROM products ORDER BY view DESC LIMIT 0,7;`;
     return sql;
 }
 export const revenue_by_type = () => {
