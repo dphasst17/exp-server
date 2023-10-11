@@ -7,6 +7,7 @@ export const laptop = [
      "sizeInch",
      "battery",
      "material",
+     "os"
 ];
 
 export const keyboard = [
