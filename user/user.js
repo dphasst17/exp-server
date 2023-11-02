@@ -13,12 +13,27 @@ router.post('/', verify, (req, res) => {
     pool.query(sql, function (err, results) {
         if (err) {
             res.status(500).json({ 
+                err:err,
                 status:500,
                 message: "A server error occurred. Please try again in 5 minutes." 
             });
             return;
         }
-        res.json(results);
+        res.json(results.map(e => {
+            let cart = JSON.parse(e.cart);
+            let order = JSON.parse(e.order);
+            let address = JSON.parse(e.address);
+            return {
+                nameUser:e.nameUser,
+                img:e.img,
+                email:e.email,
+                phone:e.phone,
+                role:e.role,
+                cart:cart.every(c => Object.values(c).every(value => value === null)) ? [] : cart,
+                order:order.every(c => Object.values(c).every(value => value === null)) ? [] : order,
+                address:address.every(c => Object.values(c).every(value => value === null)) ? [] : address
+            }}
+        ));
     });
 })
 router.get('/role/:role', (req, res) => {
@@ -35,9 +50,8 @@ router.get('/role/:role', (req, res) => {
         res.status(200).json(results);
     })
 })
-router.get('/role/diff/:role', (req, res) => {
-    const role = req.params['role']
-    const sql = sqlQuery.getRoleDifferent(role);
+router.get('/all', (req, res) => {
+    const sql = sqlQuery.getAllUser();
     pool.query(sql, (err, results) => {
         if (err) {
             res.status(500).json({ 

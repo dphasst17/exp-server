@@ -36,13 +36,31 @@ router.get("/product/:idProduct", (req, res) => {
       return;
     }
     res.status(200).json(results.map(e => {
+      const resultDetail = JSON.parse(e.detail)
       return {
         ...e,
-        detail:JSON.parse(e.detail)
+        detail:resultDetail.every(c => Object.values(c).every(value => value === null)) ? [] : resultDetail
       }
     }));
   });
 });
+router.post("/insert/:idProduct",verify,filterData,(req,res) => {
+  const idUser = req.idUser;
+  const data = req.result;
+  const idProduct = req.params['idProduct'];
+  const sql = sqlQuery.commentInsert(idProduct,idUser,data.value,data.date)
+  pool.query(sql,(err,results) => {
+    if (err) {
+      res.status(500).json({
+        status:500,
+        message: "A server error occurred. Please try again in 5 minutes.",
+      });
+      return;
+    }
+    res.status(201).json({message:'Add comment is success'})
+  })
+})
+
 router.post("/user", verify, async (req, res) => {
   const idUser = await req.idUser;
   const sql = sqlQuery.getCommentByIdUser(idUser);

@@ -122,14 +122,14 @@ router.post('/login', filterData, (req, res) => {
                 });
                 return;
             }
-            const pass_hash = results.map(e => e.password_hash).toString()
-            isPassword = bcrypt.compareSync(password, pass_hash);
-
             if (results.length === 0) {
                 res.status(401).json("Username does not exist")
             }
+            const pass_hash = results.map(e => e.password_hash).toString()
+            isPassword = bcrypt.compareSync(password, pass_hash);
+
             if (!isPassword) {
-                res.status(401).send("Incorrect Password ")
+                res.status(401).json("Incorrect Password ")
             }
             const idUser = results.map(e => e.idUser).toString()
             const role = Number(results.map(e => e.role))
@@ -139,6 +139,47 @@ router.post('/login', filterData, (req, res) => {
         })
 
     }
+
+})
+router.post('/admin/login',filterData,(req,res) => {
+    const data = req.result;
+    const username = data.username;
+    const password = data.password;
+    const sql = sqlQuery.adminLogin(username);
+    pool.query(sql,(err,results) => {
+        let isPassword
+        if (err) {
+            res.status(500).json({
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes." 
+            });
+            return;
+        }
+        if(results.length === 0) {
+            res.status(401).json({message:'Username does not exist'})
+        }
+        const pass_hash = results.map(e => e.password_hash).toString()
+        isPassword = bcrypt.compareSync(password, pass_hash);
+        if (!isPassword) {
+            res.status(401).json({message: "Incorrect Password "})
+        }
+        const idUser = results.map(e => e.idUser).toString();
+        const role = Number(results.map(e => e.role))
+        const sqlStatus = sqlQuery.updateStatusLogin(idUser,'login')
+        pool.query(sqlStatus,(err,results) => {
+            if (err) {
+                res.status(500).json({
+                    err:err,
+                    status:500,
+                    message: "A server error occurred. Please try again in 5 minutes." 
+                });
+                return;
+            }
+            const accessToken = jwt.sign({ id: idUser }, process.env.SECRET_KEY, { expiresIn: "1d" });
+            const { exp: expAccess } = jwt.decode(accessToken);
+            res.status(200).json({accessToken:accessToken,exp:expAccess,role:role});
+        }) 
+    })
 
 })
 router.post('/new/token', verify, (req, res) => {

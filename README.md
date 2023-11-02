@@ -213,6 +213,18 @@ body:JSON.stringify(list:[This will contain the ids],...)
 - The endpoint for comment is started with: `/api/comment`
     * Get all comment: `/` - method:'GET'
     * Get comment by product: `/product/:idProduct` - method:'GET'
+    * Insert comment by product: `/insert/:idProduct` - method:'POST'
+        * Demo
+        ```
+        {
+            method:'POST',
+            headers:{
+                'Content-Type':'application/json',
+                'Authorization':'Bearer token'
+            },
+            body:JSON.stringify({value:'This is comment value',date:'2023-10-11'})
+        }
+        ```
     * Get comment by user: `/user` - method:'POST'
     * Delete one comment: `/delete/:idComment` - method:'DELETE'
     * Delete comment in list: `/list/delete` - method:'DELETE'

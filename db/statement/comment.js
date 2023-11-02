@@ -8,8 +8,14 @@ export const commentGetAll = () => {
     return sql
 }
 export const getCommentByIdProduct = (idProduct) => {
-    const sql = `SELECT c.idProduct,p.nameProduct,p.imgProduct, CONCAT('[', GROUP_CONCAT(JSON_OBJECT('idUser', c.idUser, 'commentValue', c.commentValue, 'dateComment', c.dateComment)), ']') AS detail 
-    FROM comments c JOIN products p ON c.idProduct = p.idProduct WHERE c.idProduct = ${idProduct} GROUP BY idProduct;`;
+    const sql = `SELECT p.idProduct, p.nameProduct, p.imgProduct,
+    IFNULL(CONCAT('[', GROUP_CONCAT(JSON_OBJECT('idUser', c.idUser,'nameUser',u.nameUser,'img',u.img, 'commentValue', c.commentValue, 'dateComment', c.dateComment)), ']'), '[]') AS detail
+FROM products p
+LEFT JOIN comments c ON p.idProduct = c.idProduct
+LEFT JOIN users u ON c.idUser = u.idUser
+WHERE p.idProduct = ${idProduct}
+GROUP BY p.idProduct;
+`;
     return sql;
 };
 export const getCommentByIdUser = (idUser) => {

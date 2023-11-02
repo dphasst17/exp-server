@@ -66,11 +66,13 @@ export const getDetail = (idType, idProduct) => {
   const sql = `SELECT p.*,t.nameType,
       SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) 
       AS quantity,
+      CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT('type',i.type,'img',i.img)),']')AS img,
       ${infoTable}
       FROM products p 
       LEFT JOIN warehouse w ON p.idProduct = w.idProduct
       LEFT JOIN ${joinTable}
       LEFT JOIN type t ON p.idType = t.idType 
+      LEFT JOIN imageProduct i ON p.idProduct = i.idProduct
       WHERE p.idProduct=${idProduct}
       GROUP BY p.idProduct;`;
   return sql;
@@ -166,7 +168,7 @@ export const searchProduct = (keyword) => {
   return sql;
 };
 export const productInsertInfo = (listData) => {
-  const sql = `INSERT INTO product(nameProduct,price,imgProduct,dateAdded,idType,brand)VALUES(${listData})`;
+  const sql = `INSERT INTO products(nameProduct,price,imgProduct,dateAdded,idType,brand)VALUES('${listData[0]}',${listData[1]},'${listData[2]}','${listData[3]}',${listData[4]},'${listData[5]}')`;
   return sql;
 };
 export const productInsertDetail = (idType, productValue) => {
@@ -200,16 +202,16 @@ export const productInsertDetail = (idType, productValue) => {
 };
 
 export const productUpdate = (idProduct, data) => {
-  const sql = `UPDATE products SET nameProduct = '${data[0]}',price = ${data[1]},discount = ${data[2]},imgProduct = ${data[3]},
-  dateAdded = ${data[4]},des = ${data[5]},idType = ${data[6]},brand = ${data[7]} WHERE idProduct = ${idProduct}`;
+  const sql = `UPDATE products SET nameProduct = ${data[0]},price = ${data[1]},imgProduct = '${data[2]}',
+  dateAdded = '${data[3]}',idType = ${data[4]},brand = ${data[5]} WHERE idProduct = ${idProduct}`;
   return sql;
 };
 export const productUpdateDetail = (idType, idProduct, listData) => {
   let table;
   switch (idType) {
     case "1":
-      table = `laptop SET cpu = ${listData[0]},capacity = ${listData[1]},maxram = ${listData[2]},storage = ${listData[3]},
-      os = ${listData[4]},resolution = ${listData[5]},sizeInch = ${listData[6]},battery = ${listData[7]},material = ${listData[8]}`;
+      table = `laptop SET cpu = '${listData[0]}',capacity = '${listData[1]}',maxram = '${listData[2]}',storage = '${listData[3]}',
+      os = '${listData[4]}',resolution = '${listData[5]}',sizeInch = ${listData[6]},battery = '${listData[7]}',material = '${listData[8]}'`;
       break;
     case "2":
       table = `keyboard SET layout = ${listData[0]},connection = ${listData[1]},switch = ${listData[2]},
@@ -238,6 +240,13 @@ export const productUpdateDetail = (idType, idProduct, listData) => {
   const sql = `UPDATE ${table} WHERE idProduct = ${idProduct}`;
   return sql;
 };
+
+export const productAddImg = (idProduct,arrImg) => {
+  const resultArr = arrImg.map(e => `(${idProduct},'extra','${e}')`)
+  const sql = `INSERT INTO imageProduct(idProduct,type,img)VALUES${resultArr}`
+  return sql;
+}
+
 export const productDelete = (idProduct) => {
   const sql = `DELETE FROM products WHERE idProduct = ${idProduct}`;
   return sql;

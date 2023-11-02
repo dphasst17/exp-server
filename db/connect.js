@@ -1,4 +1,4 @@
-import mysql from 'mysql';
+import mysql from 'mysql2';
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -8,6 +8,10 @@ export const connectDB = () => {
         user:process.env.USER,
         password:process.env.PASSWORD,
         database:process.env.DB
+        /* host:'localhost',
+        user:'root',
+        password:'dbTech',
+        database:'dbTech' */
     });
     return con;
 };

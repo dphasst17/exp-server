@@ -6,18 +6,18 @@ export const filterData = (req, res, next) => {
     if (Array.isArray(dataObject)) {
         for (let i = 0; i < dataObject.length; i++) {
             if (typeof dataObject[i] === 'string') {
-                dataObject[i] = dataObject[i].replace(/[&\/\\#,+()$~%'":*?<>{}`!-]/g, '');
+                dataObject[i] = dataObject[i].replace(/[\'\\''#''$'~%'"*{}'--'`'OR'!]/g, '');
             }
         }
     } else {
         let keys = Object.keys(dataObject);
         for (let key of keys) {
             if (typeof dataObject[key] === 'string') {
-                dataObject[key] = dataObject[key].replace(/[&\/\\#,+()$~%'":*?<>{}`!-]/g, '');
+                dataObject[key] = dataObject[key].replace(/[\'\\''#''$'~%'"*{}'--'`'OR'!]/g, '');
             } else if (Array.isArray(dataObject[key])) {
                 for (let i = 0; i < dataObject[key].length; i++) {
                     if (typeof dataObject[key][i] === 'string') {
-                        dataObject[key][i] = dataObject[key][i].replace(/[&\/\\#,+()$~%'":*?<>{}`!-]/g, '');
+                        dataObject[key][i] = dataObject[key][i].replace(/[\'\\''#''$'~%'"*{}'--'`'OR'!]/g, '');
                     }
                 }
             }

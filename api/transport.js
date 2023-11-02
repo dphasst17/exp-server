@@ -2,7 +2,7 @@ import express from "express";
 import { poolConnectDB } from "../db/connect.js";
 import { transportsSelectAll,transportsSelectOne,transportInsert,
  transDetailInsertInList, transDetailDeleteAll, transDetailDeleteOne, transportsDelete, 
-insertFailOrderDetail, insertFailOrder,checkCountProductInTrans, transDetailUpdateStatus, transportsSelectByUser} from "../db/statement/cart_transport.js";
+insertFailOrderDetail, insertFailOrder,checkCountProductInTrans, transDetailUpdateStatus, transportsSelectByUser, cartDeleteList} from "../db/statement/cart_transport.js";
 import {billsInsertOne, billDetailInsert} from "../db/statement/bills.js"
 import { verify,filterData } from "../middleware/middleware.js";
 const router = express.Router();
@@ -67,7 +67,8 @@ router.post('/insert',verify,filterData,(req,res) => {
     const listIdCart = data.listIdCart.join(",")
     const idTrans = `${idUser}${month}${year}`
     const sql = transportInsert(idTrans,idUser,data.info);
-    const sql2 = transDetailInsertInList(listIdCart,idTrans)
+    const sql2 = transDetailInsertInList(listIdCart,idTrans);
+    const deleteCart = cartDeleteList(listIdCart)
     pool.query(sql,function(err,results){
         if(err){
             res.status(500).json({
@@ -84,7 +85,17 @@ router.post('/insert',verify,filterData,(req,res) => {
                 });
                 return;
             }
-            res.status(201).json({message:'Insert success'});
+            pool.query(deleteCart,(err,results) => {
+                if(err){
+                    res.status(500).json({
+                        
+                        status:500,
+                        message: "A server error occurred. Please try again in 5 minutes."
+                    });
+                    return;
+                }
+                res.status(201).json({message:'Insert success'});
+            })
         })
     })
 })
@@ -92,7 +103,8 @@ router.patch('/update/:idTrans',filterData,(req,res) => {
     const idTrans = req.params['idTrans'];
     const data = req.result;
     const sql = transDetailUpdateStatus(idTrans,data.status);
-    pool.query(sql,function(err,results){
+    res.json(sql)
+    /* pool.query(sql,function(err,results){
         if(err){
             res.status(500).json({
                 status:500,
@@ -101,7 +113,7 @@ router.patch('/update/:idTrans',filterData,(req,res) => {
             return;
         }
         res.status(201).json({message:'Update success'});
-    })
+    }) */
 })
 
 router.delete('/delete/all/:idTrans',filterData,(req,res) => {

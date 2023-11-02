@@ -29,7 +29,7 @@ router.get('/',verify,(req,res) => {
 router.post('/add',verify,filterData,(req,res) => {
     const idUser = req.idUser;
     const data = req.result;
-    const sql = cartInsert(data.id,idUser,data.count)
+    const sql = cartInsert(data.idProduct,idUser,data.count)
     pool.query(sql,function(err,results){
         if(err){
             res.status(500).json({
@@ -38,7 +38,22 @@ router.post('/add',verify,filterData,(req,res) => {
             });
             return;
         }
-        res.status(201).json({message:'Add product to cart success'})
+        let insertId = results.insertId;
+        const updateIdCart = `SELECT * FROM carts WHERE idCart = ${insertId}`
+        pool.query(updateIdCart,(err,resUpdate) => {
+            if(err){
+                res.status(500).json({
+                    status:500,
+                    message: "A server error occurred. Please try again in 5 minutes."
+                });
+                return;
+            }
+            res.status(201).json({
+                newId:resUpdate.map(e => {return {idCart:e.idCart,idProduct:e.idProduct}}),
+                message:'Add product to cart success'
+            })
+        })
+        
         
     })
 })
@@ -60,12 +75,13 @@ router.post('/list',filterData,(req,res) => {
 })
 router.patch('/update',filterData,(req,res) => {
     const data = req.result;
-    const idCart = Number(data.cart);
+    const idCart = Number(data.idCart);
     const count = Number(data.count)
     const sql = cartUpdate(idCart,count)
     pool.query(sql,function(err,results){
         if(err){
             res.status(500).json({
+                err:err,
                 status:500,
                 message: "A server error occurred. Please try again in 5 minutes."
             });

@@ -27,6 +27,7 @@ router.get("/", (req, res) => {
   pool.query(sql, function (err, results) {
     if (err) {
       res.status(500).json({
+        err:err,
         status:500,
         message: "A server error occurred. Please try again in 5 minutes.",
       });
@@ -116,10 +117,14 @@ router.get("/detail/get/:idType/:idProduct", (req, res) => {
     }
     res.json(
       results.map((e) => {
-        return {
+        let subImg = JSON.parse(e.img)
+        let formatResult =  {
           ...e,
+          imgProduct:subImg.every(c => Object.values(c).every(value => value === null)) ? [{img:e.imgProduct,type:'default'}] :[{img:e.imgProduct,type:'default'},...subImg],
           detail:JSON.parse(e.detail)
         }
+        delete formatResult.img
+        return formatResult
       })
     );
   });
@@ -129,49 +134,40 @@ router.post("/insert", filterData, (req, res) => {
   const data = req.result;
   const folder = data.folder;
   const productInf = data.product;
-  const queryCheck = false;
-  const resultProduct = productInf
-    .map((e, i) => {
-      if (i === 2) {
-        return "'" + process.env.AWS_URL_IMG + "/" + folder + "/" + e + "'";
-      } else {
-        return /[a-zA-Z]/.test(e) ? "'" + e + "'" : e;
-      }
-    })
-    .toString();
-  const resultDetail = data.detail
-    .map((item) => {
-      if (/[a-zA-Z]/.test(item)) {
-        return "'" + item + "'";
-      } else {
-        return item;
-      }
-    })
-    .toString();
-  const sqlProduct = sqlQuery.productInsertInfo(resultProduct);
+  let resultProduct = productInf[0]
+      resultProduct[2] = `${process.env.AWS_URL_IMG}/${folder}/${resultProduct[2]}`
 
+  const resultDetail = data.detail
+  const sqlProduct = sqlQuery.productInsertInfo(resultProduct);
   pool.query(sqlProduct, (err, results) => {
     if (err) {
       res.status(500).json({
+        err1:err,
         message: "A server error occurred. Please try again in 5 minutes.",
       });
       return;
     }
     const idProduct = results.insertId;
-    const lastResult = `${idProduct},${resultDetail}`;
-    const sqlDetail = sqlQuery.productInsertDetail(productInf[5], lastResult);
+    const lastArr = [`${idProduct}`,...resultDetail.flatMap(e => e)];
+    const lastResult = lastArr.map((item) => {
+      if (/[a-zA-Z]/.test(item)) {
+        return `"${item}"`;
+      } else {
+        return item;
+      }
+    });
+    const sqlDetail = sqlQuery.productInsertDetail(productInf[0][4], lastResult);
     pool.query(sqlDetail, (err, results) => {
       if (err) {
         res.status(500).json({
+          err2:err,
           message: "A server error occurred. Please try again in 5 minutes.",
         });
         return;
       }
-      return (queryCheck = true);
+      res.status(201).json({ message: "Add product to success" });
     });
   });
-
-  queryCheck === true && res.status(201).json({ message: "Add product to success" });
 });
 
 router.put("/update/:idType/:idProduct", filterData, (req, res) => {
@@ -186,12 +182,41 @@ router.put("/update/:idType/:idProduct", filterData, (req, res) => {
       } else {
         return /[a-zA-Z]/.test(e) ? "'" + e + "'" : e;
       }
-    })
-    .toString();
+    }).toString().split(",");
   const detail = data.detail;
   const sql = sqlQuery.productUpdate(idProduct, product);
-  const sqlDetail = sqlQuery.productUpdateDetail(idType,idProduct,detail)
+  const sqlDetail = sqlQuery.productUpdateDetail(idType,idProduct,detail);
   pool.query(sql, (err, results) => {
+    if (err) {
+      res.status(500).json({
+        err1:err,
+        status:500,
+        message: "A server error occurred. Please try again in 5 minutes.",
+      });
+    }
+    pool.query(sqlDetail,(err,results) => {
+      if (err) {
+        res.status(500).json({
+          err2:err,
+          status:500,
+          message: "A server error occurred. Please try again in 5 minutes.",
+        });
+      }
+    })
+    res.status(200).json({ message: "Update to success" });
+  });
+});
+router.post("/image/add/:idProduct",(req,res) => {
+  const idProduct = req.params['idProduct'];
+  const data = req.body;
+  let dataUrl;
+  if(data.file){
+    dataUrl = data.file.map(e => `${process.env.AWS_URL_IMG}/product/${e}`)
+  }else{
+    dataUrl = data.urlImage
+  }
+  const sql = sqlQuery.productAddImg(idProduct,dataUrl)
+  pool.query(sql,(err,results) => {
     if (err) {
       res.status(500).json({
         status:500,
@@ -199,17 +224,9 @@ router.put("/update/:idType/:idProduct", filterData, (req, res) => {
       });
       return;
     }
-    pool.query(sqlDetail,(err,results) => {
-      if (err) {
-        res.status(500).json({status:500,
-          message: "A server error occurred. Please try again in 5 minutes.",
-        });
-        return;
-      }
-      res.status(204).json({ message: "Update to success" });
-    })
-  });
-});
+    res.status(201).json({status:201,message:'Add image to success'});
+  })
+})
 router.delete("/delete/:idProduct", filterData, (req, res) => {
   const idProduct = req.params["idProduct"];
   const sql = sqlQuery.productDelete(idProduct);

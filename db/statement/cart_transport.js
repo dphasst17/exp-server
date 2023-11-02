@@ -52,8 +52,8 @@ export const transDetailInsert = (idTrans,idProduct,count) => {
     return sql;
 }
 export const transDetailInsertInList = (listId,idTrans) => {
-    const sql = `INSERT INTO transports(idTrans,idProduct,countProduct,status) 
-    SELECT ('${idTrans}')AS idTrans,idProduct,countProduct,('Chờ xác nhận')AS status 
+    const sql = `INSERT INTO transDetail(idTrans,idProduct,countProduct,status)
+    SELECT '${idTrans}'AS idTrans,idProduct,countProduct,'Chờ xác nhận'AS status
     FROM carts WHERE idCart IN (${listId})`;
     return sql;
 }
@@ -75,7 +75,7 @@ export const transportsSelectByUser = (idUser) => {
         WHERE t.idUser = '${idUser}' GROUP BY t.idTrans`;
     return sql;
 }
-export const transDetailUpdateStatus = (status,idTrans) => {
+export const transDetailUpdateStatus = (idTrans,status) => {
     const sql = `UPDATE transDetail SET status = '${status}' WHERE idTrans = '${idTrans}';`
     return sql;
 }
