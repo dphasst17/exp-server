@@ -165,20 +165,9 @@ router.post('/admin/login',filterData,(req,res) => {
         }
         const idUser = results.map(e => e.idUser).toString();
         const role = Number(results.map(e => e.role))
-        const sqlStatus = sqlQuery.updateStatusLogin(idUser,'login')
-        pool.query(sqlStatus,(err,results) => {
-            if (err) {
-                res.status(500).json({
-                    err:err,
-                    status:500,
-                    message: "A server error occurred. Please try again in 5 minutes." 
-                });
-                return;
-            }
-            const accessToken = jwt.sign({ id: idUser }, process.env.SECRET_KEY, { expiresIn: "1d" });
-            const { exp: expAccess } = jwt.decode(accessToken);
-            res.status(200).json({accessToken:accessToken,exp:expAccess,role:role});
-        }) 
+        const accessToken = jwt.sign({ id: idUser }, process.env.SECRET_KEY, { expiresIn: "1d" });
+        const { exp: expAccess } = jwt.decode(accessToken);
+        res.status(200).json({accessToken:accessToken,exp:expAccess,role:role});
     })
 
 })

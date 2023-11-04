@@ -60,7 +60,10 @@ export const changeRoleInList = (list, role) => {
   const sql = `UPDATE login SET role = ${role} WHERE idUser IN (${list});`;
   return sql;
 };
-
+export const addressGetAll = () => {
+  const sql = `SELECT * FROM userAddress;`
+  return sql;
+}
 export const addressSelectAll = (idUser) => {
   const sql = `SELECT * FROM userAddress WHERE idUser = '${idUser}';`;
   return sql;

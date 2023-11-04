@@ -15,7 +15,12 @@ router.get('/', (req, res) => {
             });
             return;
         }
-        res.status(200).json(results);
+        res.status(200).json(results.map(e => {
+            return {
+                ...e,
+                dateIOX:new Date(e.dateIOX).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+            }
+        }));
     })
 })
 router.get('/total', (req, res) => {

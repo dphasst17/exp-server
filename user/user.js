@@ -63,6 +63,19 @@ router.get('/all', (req, res) => {
         res.status(200).json(results);
     })
 })
+router.get('/address',(req,res) => {
+    const sql = sqlQuery.addressGetAll()
+    pool.query(sql,(err,results) => {
+        if (err) {
+            res.status(500).json({ 
+                status:500,
+                message: "A server error occurred. Please try again in 5 minutes." 
+            });
+            return;
+        }
+        res.status(200).json(results)
+    })
+})
 router.post('/address/add',verify,filterData,(req,res) => {
     const idUser = req.idUser;
     const data = req.result;
