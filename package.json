@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "docker-compose up -d && nodemon index.js"
   },
   "author": "",
   "license": "ISC",
