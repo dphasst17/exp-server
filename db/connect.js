@@ -10,7 +10,7 @@ export const poolConnectDB = () => {
         user:process.env.USER,
         password:process.env.PASSWORD,
         database:process.env.DB,
-        port:process.env.PORT
+        port:process.env.PORTSQL
     });
     return pool
 }
