@@ -58,7 +58,13 @@ router.get('/user/get',verify,(req,res) => {
             });
             return;
         }
-        res.status(200).json(results)
+        res.status(200).json(results.map(e => {
+            const resultDetail = JSON.parse(e.detail)
+            return {
+                ...e,
+                detail:resultDetail.every(c => Object.values(c).every(value => value === null)) ? [] : resultDetail
+            }
+        }))
     })
 })
 router.post('/insert',verify,filterData,(req,res) => {
