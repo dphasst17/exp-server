@@ -10,7 +10,7 @@ const pool = poolConnectDB();
 router.post('/', verify, (req, res) => {
     let idUser = req.idUser
     const sql = sqlQuery.getUser(idUser)
-    pool.query(sql, function (err, results) {
+    pool.query('SET SESSION group_concat_max_len = 1000000;',(err,results) => {
         if (err) {
             res.status(500).json({ 
                 err:err,
@@ -19,22 +19,32 @@ router.post('/', verify, (req, res) => {
             });
             return;
         }
-        res.json(results.map(e => {
-            let cart = JSON.parse(e.cart);
-            let order = JSON.parse(e.order);
-            let address = JSON.parse(e.address);
-            return {
-                nameUser:e.nameUser,
-                img:e.img,
-                email:e.email,
-                phone:e.phone,
-                role:e.role,
-                cart:cart.every(c => Object.values(c).every(value => value === null)) ? [] : cart,
-                order:order.every(c => Object.values(c).every(value => value === null)) ? [] : order,
-                address:address.every(c => Object.values(c).every(value => value === null)) ? [] : address
-            }}
-        ));
-    });
+        pool.query(sql, function (err, results) {
+            if (err) {
+                res.status(500).json({ 
+                    err:err,
+                    status:500,
+                    message: "A server error occurred. Please try again in 5 minutes." 
+                });
+                return;
+            }
+            res.json(results.map(e => {
+                let cart = JSON.parse(e.cart);
+                let order = JSON.parse(e.order);
+                let address = JSON.parse(e.address);
+                return {
+                    nameUser:e.nameUser,
+                    img:e.img,
+                    email:e.email,
+                    phone:e.phone,
+                    role:e.role,
+                    cart:cart.every(c => Object.values(c).every(value => value === null)) ? [] : cart,
+                    order:order.every(c => Object.values(c).every(value => value === null)) ? [] : order,
+                    address:address.every(c => Object.values(c).every(value => value === null)) ? [] : address
+                }}
+            ));
+        });
+    })
 })
 router.get('/role/:role', (req, res) => {
     const role = req.params['role']
