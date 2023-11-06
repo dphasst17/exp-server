@@ -23,7 +23,7 @@ export const register = (idUser, username, password, type) => {
   return sql;
 };
 export const getUser = (idUser) => {
-  const sql = `SELECT u.*,l.role,
+  const sql = `SET SESSION group_concat_max_len = 1000000;SELECT u.*,l.role,
     CONCAT('[', GROUP_CONCAT(DISTINCT JSON_OBJECT('idCart',c.idCart,'idProduct', c.idProduct, 'nameProduct', pc.nameProduct, 'price', pc.price,'imgProduct',pc.imgProduct,'count',c.countProduct)), ']') AS cart,
     CONCAT('[', GROUP_CONCAT(DISTINCT JSON_OBJECT('idBill',d.idBill,'idProduct', d.idProduct, 'nameProduct', pd.nameProduct, 'price', pd.price,'imgProduct',pd.imgProduct,'count',d.countProduct,'discount',d.discount,'totalProduct',d.totalProduct)), ']') AS "order",
     CONCAT('[', GROUP_CONCAT(DISTINCT JSON_OBJECT('idAddress',a.idAddress,'typeAddress', a.typeAddress, 'detail', a.detail)), ']') AS address
