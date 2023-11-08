@@ -40,7 +40,7 @@ router.post('/', verify, (req, res) => {
                     role:e.role,
                     cart:cart.every(c => Object.values(c).every(value => value === null)) ? [] : cart,
                     order:order.every(c => Object.values(c).every(value => value === null)) ? [] : order,
-                    address:address.every(c => Object.values(c).every(value => value === null)) ? [] : address
+                    address:address.every(c => Object.values(c).every(value => value === null)) ? [] : address.sort((a,b) => b.idAddress - a.idAddress)
                 }}
             ));
         });
@@ -98,12 +98,12 @@ router.post('/address/add',verify,filterData,(req,res) => {
             });
             return;
         }
-        res.status(201).json({message:'Success'});
+        res.status(201).json({status:201,message:'Success'});
     })
 })
-router.patch('change/address/detail',filterData,(req,res) => {
+router.patch('/address/change/detail',filterData,(req,res) => {
     const data = req.result;
-    const sql = sqlQuery.updateAddress(data.idAddress,data.detail);
+    const sql = sqlQuery.updateAddress(data.idAddress,data.type);
     pool.query(sql,(err,results) => {
         if (err) {
             res.status(500).json({ 
@@ -115,10 +115,12 @@ router.patch('change/address/detail',filterData,(req,res) => {
         res.status(200).json({message:'Update success'});
     })
 })
-router.patch('change/address/type',filterData,(req,res) => {
+router.post('/address/change/type',verify,filterData,(req,res) => {
+    const idUser= req.idUser;
     const data = req.result;
+    const changeType = sqlQuery.addressRemoveDefault(idUser);
     const sql = sqlQuery.updateTypeAddress(data.idAddress,data.type);
-    pool.query(sql,(err,results) => {
+    pool.query(changeType,(err,results) => {
         if (err) {
             res.status(500).json({ 
                 status:500,
@@ -126,7 +128,16 @@ router.patch('change/address/type',filterData,(req,res) => {
             });
             return;
         }
-        res.status(200).json({message:'Update success'});
+        pool.query(sql,(err,results) => {
+            if (err) {
+                res.status(500).json({ 
+                    status:500,
+                    message: "A server error occurred. Please try again in 5 minutes." 
+                });
+                return;
+            }
+            res.status(200).json({status:200,message:'Update success'});
+        })
     })
 })
 router.post('/change/info', verify, filterData, async (req, res) => {
@@ -141,7 +152,7 @@ router.post('/change/info', verify, filterData, async (req, res) => {
             });
             return;
         }
-        res.status(200).json('User updated successfully');
+        res.status(200).json({status:200,message:'User updated successfully'});
     })
 })
 router.post('/change/role/:newRole', verify, handleCheckRole, filterData, (req, res) => {

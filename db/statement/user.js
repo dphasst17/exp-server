@@ -35,7 +35,8 @@ export const getUser = (idUser) => {
     LEFT JOIN billDetail d ON b.idBill = d.idBill
     LEFT JOIN products pd ON d.idProduct = pd.idProduct
     LEFT JOIN userAddress a ON u.idUser = a.idUser
-    WHERE u.idUser = '${idUser}';
+    WHERE u.idUser = '${idUser}'
+    ORDER BY a.idAddress DESC;
 `;
   return sql;
 };
@@ -48,7 +49,7 @@ export const getAllUser = () => {
   return sql;
 };
 export const changeUser = (idUser, name, email, phone) => {
-  const sql = `UPDATE users SET nameUser = ${name},email = ${email}, phone = '${phone}' WHERE idUser = '${idUser}';`;
+  const sql = `UPDATE users SET nameUser = '${name}',email = '${email}', phone = '${phone}' WHERE idUser = '${idUser}';`;
   return sql;
 };
 
@@ -80,6 +81,10 @@ export const updateTypeAddress = (idAddress, type) => {
   const sql = `UPDATE userAddress SET typeAddress = '${type}' WHERE idAddress = ${idAddress};`;
   return sql;
 };
+export const addressRemoveDefault = (idUser) => {
+  const sql = `UPDATE userAddress SET typeAddress = 'extra' WHERE idUser = '${idUser}' AND typeAddress = 'default';`;
+  return sql;
+}
 export const deleteAddress = (idAddress) => {
   const sql = `DELETE FROM userAddress WHERE idAddress = ${idAddress};`;
   return sql;
