@@ -77,7 +77,29 @@ export const getDetail = (idType, idProduct) => {
       GROUP BY p.idProduct;`;
   return sql;
 };
-
+export const getColDetail = (name) => {
+  const sql = `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '${name}' AND COLUMN_NAME NOT IN ('id', 'idProduct');`;
+  return sql;
+}
+export const getProductDetail = (results,name,shortName) => {
+  const colDetail = results.map((e) => e.COLUMN_NAME);
+    const colQuery = colDetail.map(
+      (e) => `'${e}',${shortName}.${e}`
+    )
+    const sql = `SELECT product.*,t.nameType,SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) AS quantity,
+    CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${colQuery})),']') AS detail 
+    FROM products product 
+    LEFT JOIN warehouse w ON product.idProduct = w.idProduct
+    LEFT JOIN type t ON product.idType = t.idType 
+    LEFT JOIN ${name} ${shortName} ON product.idProduct = ${shortName}.idProduct
+    WHERE t.nameType = '${name}'
+    GROUP BY product.idProduct;`;
+    return sql
+}
+/* SELECT COLUMN_NAME
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'ten_bang' AND COLUMN_NAME NOT IN ('id', 'idProduct');
+ */
 export const getProductByType = (idType) => {
   let joinTable;
   let infoTable;
@@ -241,7 +263,7 @@ export const productUpdateDetail = (idType, idProduct, listData) => {
   return sql;
 };
 
-export const productAddImg = (idProduct,arrImg) => {
+export const productAddImg = (idProduct, arrImg) => {
   const resultArr = arrImg.map(e => `(${idProduct},'extra','${e}')`)
   const sql = `INSERT INTO imageProduct(idProduct,type,img)VALUES${resultArr}`
   return sql;
@@ -256,3 +278,27 @@ export const productDeleteList = (list) => {
   const sql = `DELETE FROM products WHERE idProduct IN (${list})`;
   return sql;
 };
+
+export const insertType = (name) => {
+  const sql = `INSERT INTO type(nameType)VALUES('${name}');`
+  return sql;
+}
+export const createNewTypeTB = (tbName, arrCol) => {
+  const sql = `CREATE TABLE ${tbName}(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    idProduct INT NOT NULL,
+    ${arrCol?.map(e => `${e.nameCol} ${e.type.toUpperCase()} ${e.limit !== 0 ? `(${e.limit})`: ''}`)},
+    FOREIGN KEY (idProduct) REFERENCES products(idProduct)
+  );`
+  return sql;
+}
+export const addInfoTable = (tbName,arrCol) => {
+  const arrResult = arrCol.map(e => `('${tbName}${e.nameCol}','${tbName}','${e.nameCol}','${e.type !== 'number' ? 'text' : 'number'}','${e.displayname}',${e.order})`)
+  const sql = `INSERT INTO typedetail(id,type,name,datatypes,displayname,displayorder)VALUES ${arrResult};`;
+  return sql
+}
+
+export const getInfoType = () => {
+  const sql = `SELECT type,CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT('id',id,'name',name,'datatypes',datatypes,'displayname',displayname,'displayorder',displayorder) ORDER BY displayorder ASC),']') AS detail FROM typedetail GROUP BY type ;`;
+  return sql;
+}

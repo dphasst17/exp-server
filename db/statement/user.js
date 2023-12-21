@@ -25,7 +25,7 @@ export const register = (idUser, username, password, type) => {
 export const getUser = (idUser) => {
   const sql = `SELECT u.*,l.role,
     CONCAT('[', GROUP_CONCAT(DISTINCT JSON_OBJECT('idCart',c.idCart,'idProduct', c.idProduct, 'nameProduct', pc.nameProduct, 'price', pc.price,'imgProduct',pc.imgProduct,'count',c.countProduct)), ']') AS cart,
-    CONCAT('[', GROUP_CONCAT(DISTINCT JSON_OBJECT('idBill',d.idBill,'idProduct', d.idProduct, 'nameProduct', pd.nameProduct, 'price', pd.price,'imgProduct',pd.imgProduct,'count',d.countProduct,'discount',d.discount,'totalProduct',d.totalProduct)), ']') AS "order",
+    CONCAT('[', GROUP_CONCAT(DISTINCT JSON_OBJECT('idBill',d.idBill,'idProduct', d.idProduct, 'nameProduct', pd.nameProduct, 'price', pd.price,'imgProduct',pd.imgProduct,'count',d.countProduct,'idType',pd.idType,'nameType',t.nameType,'discount',d.discount,'totalProduct',d.totalProduct)), ']') AS "order",
     CONCAT('[', GROUP_CONCAT(DISTINCT JSON_OBJECT('idAddress',a.idAddress,'typeAddress', a.typeAddress, 'detail', a.detail)), ']') AS address
     FROM users u 
     LEFT JOIN login l ON u.idUser = l.idUser
@@ -34,6 +34,7 @@ export const getUser = (idUser) => {
     LEFT JOIN bills b ON u.idUser = b.idUser
     LEFT JOIN billDetail d ON b.idBill = d.idBill
     LEFT JOIN products pd ON d.idProduct = pd.idProduct
+    LEFT JOIN type t ON pd.idType = t.idType
     LEFT JOIN userAddress a ON u.idUser = a.idUser
     WHERE u.idUser = '${idUser}'
     ORDER BY a.idAddress DESC;
