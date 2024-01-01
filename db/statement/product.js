@@ -1,87 +1,49 @@
-import * as colDetail from "../columnsDetail.js";
-export const getAll = () => {
-  const sql = `SELECT p.*,t.nameType,
-    SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) 
-    AS quantity,
-    CONCAT_WS(',', CONCAT(UPPER('cpu'), ':', l.cpu), CONCAT(UPPER('capacity'), ':', r.capacity), CONCAT(UPPER('dpi'), ':', m.dpi), CONCAT(UPPER('resolution'), ':', mo.resolution), CONCAT(UPPER('connectionprotocol'), ':', h.connectionprotocol), CONCAT(UPPER('memory'), ':', v.memory), CONCAT(UPPER('layout'), ':', k.layout)) AS detail1,
-    CONCAT_WS(',', CONCAT(UPPER('capacity'), ':', l.capacity), CONCAT(UPPER('busram'), ':', r.busram), CONCAT(UPPER('connection'), ':', m.connection), CONCAT(UPPER('sizeInch'), ':', mo.sizeInch), CONCAT(UPPER('capacitylevels'), ':', h.capacitylevels), CONCAT(UPPER('memoryspeed'), ':', v.memoryspeed), CONCAT(UPPER('connection'), ':', k.connection)) AS detail2,
-    CONCAT_WS(',', CONCAT(UPPER('storage'), ':', l.storage), CONCAT(UPPER('typeram'), ':', r.typeram), CONCAT(UPPER('switch'), ':', m.switch), CONCAT(UPPER('scanfrequency'), ':', mo.scanfrequency), CONCAT(UPPER('size'), ':', h.size), CONCAT(UPPER('heartbeat'), ':', v.heartbeat), CONCAT(UPPER('switch'), ':', k.switch)) AS detail3,
-    CONCAT_WS(',', CONCAT(UPPER('os'), ':', l.os), CONCAT(UPPER('ledlight'), ':', m.ledlight), CONCAT(UPPER('size'), ':', v.size), CONCAT(UPPER('keyboardmaterial'), ':', k.keyboardmaterial)) AS detail4
+
+export const getColDemo = () => {
+  const sql = `SELECT type, CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT('name',name)),']') AS detail FROM typedetail WHERE displayorder < 5 GROUP BY type ORDER BY type, displayorder;`;
+  return sql;
+}
+export const getAllProduct = (parseData) => {
+  const arrDetail = [1,2,3,4]
+  const handleConcat = (index) => {
+    const concatData = parseData.flatMap((e) =>
+      e.detail
+        .filter((d, i) => i === index)
+        .map(
+          (c) => `CONCAT(UPPER('${c.name}'), ':', ${e.type === 'mouse' ? `${e.shortName}u` : e.shortName}.${c.name})`
+        )
+    );
+    return concatData;
+  };
+  const detailResult = arrDetail.map((e,i) => `CONCAT_WS(',', ${handleConcat(i)}) AS detail${e}`)
+  const sql = `SELECT p.*,t.nameType,SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) AS quantity,${detailResult.map(e => e)} FROM products p LEFT JOIN warehouse w ON p.idProduct = w.idProduct LEFT JOIN type t ON p.idType = t.idType ${parseData.map(
+    (e) => `LEFT JOIN ${e.type} ${e.type === 'mouse' ? `${e.shortName}u` : e.shortName} ON p.idProduct = ${e.type === 'mouse' ? `${e.shortName}u` : e.shortName}.idProduct`
+  ).join(' ')} GROUP BY p.idProduct ORDER BY p.idProduct;`;
+  return sql
+}
+/* SELECT TABLE_NAME,COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME IN ('laptop','keyboard','memory','monitor','storage','mouse','vga','phone') AND COLUMN_NAME NOT IN ('id', 'idProduct'); */
+export const getProductDetail = (results,name,shortName,idProduct) => {
+  const colDetail = results.map((e) => e.COLUMN_NAME);
+    const colQuery = colDetail.map(
+      (e) => `'${e}',${shortName}.${e}`
+    )
+    const sql = `SELECT p.*,t.nameType,SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) AS quantity,
+    CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${colQuery})),']') AS detail ,
+    CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT('type',i.type,'img',i.img)),']')AS img
     FROM products p 
     LEFT JOIN warehouse w ON p.idProduct = w.idProduct
-    LEFT JOIN ram r ON p.idProduct = r.idProduct 
-    LEFT JOIN mouse m ON p.idProduct = m.idProduct 
-    LEFT JOIN monitor mo ON p.idProduct = mo.idProduct 
-    LEFT JOIN laptop l ON p.idProduct = l.idProduct 
-    LEFT JOIN keyboard k ON p.idProduct = k.idProduct 
-    LEFT JOIN harddrive h ON p.idProduct = h.idProduct 
-    LEFT JOIN vga v ON p.idProduct = v.idProduct 
     LEFT JOIN type t ON p.idType = t.idType 
-    GROUP BY p.idProduct
-    ORDER BY p.idProduct;`;
-  return sql;
-};
-
-export const getDetail = (idType, idProduct) => {
-  let joinTable;
-  let infoTable;
-  let columnDetail;
-  switch (idType) {
-    case "1":
-      joinTable = "laptop l ON p.idProduct = l.idProduct";
-      columnDetail = colDetail.laptop.map((e) => `'${e}',l.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
-      break;
-    case "2":
-      joinTable = "keyboard k ON p.idProduct = k.idProduct";
-      columnDetail = colDetail.keyboard.map((e) => `'${e}',k.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
-      break;
-    case "3":
-      joinTable = "monitor mo ON p.idProduct = mo.idProduct";
-      columnDetail = colDetail.monitor.map((e) => `'${e}',mo.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
-      break;
-    case "4":
-      joinTable = "ram r ON p.idProduct = r.idProduct";
-      columnDetail = colDetail.ram.map((e) => `'${e}',r.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
-      break;
-    case "5":
-      joinTable = "harddrive h ON p.idProduct = h.idProduct";
-      columnDetail = colDetail.storage.map((e) => `'${e}',h.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
-      break;
-    case "6":
-      joinTable = "vga v ON p.idProduct = v.idProduct";
-      columnDetail = colDetail.vga.map((e) => `'${e}',v.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
-      break;
-    case "7":
-      joinTable = "mouse m ON p.idProduct = m.idProduct";
-      columnDetail = colDetail.mouse.map((e) => `'${e}',m.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
-      break;
-  }
-  const sql = `SELECT p.*,t.nameType,
-      SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) 
-      AS quantity,
-      CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT('type',i.type,'img',i.img)),']')AS img,
-      ${infoTable}
-      FROM products p 
-      LEFT JOIN warehouse w ON p.idProduct = w.idProduct
-      LEFT JOIN ${joinTable}
-      LEFT JOIN type t ON p.idType = t.idType 
-      LEFT JOIN imageProduct i ON p.idProduct = i.idProduct
-      WHERE p.idProduct=${idProduct}
-      GROUP BY p.idProduct;`;
-  return sql;
-};
+    LEFT JOIN ${name} ${shortName} ON p.idProduct = ${shortName}.idProduct
+    LEFT JOIN imageProduct i ON p.idProduct = i.idProduct
+    WHERE p.idProduct=${idProduct}
+    GROUP BY p.idProduct;`;
+    return sql
+}
 export const getColDetail = (name) => {
   const sql = `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '${name}' AND COLUMN_NAME NOT IN ('id', 'idProduct');`;
   return sql;
 }
-export const getProductDetail = (results,name,shortName) => {
+export const getProductDetailByType = (results,name,shortName) => {
   const colDetail = results.map((e) => e.COLUMN_NAME);
     const colQuery = colDetail.map(
       (e) => `'${e}',${shortName}.${e}`
@@ -96,65 +58,16 @@ export const getProductDetail = (results,name,shortName) => {
     GROUP BY product.idProduct;`;
     return sql
 }
-/* SELECT COLUMN_NAME
-FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_NAME = 'ten_bang' AND COLUMN_NAME NOT IN ('id', 'idProduct');
- */
-export const getProductByType = (idType) => {
-  let joinTable;
-  let infoTable;
-  let columnDetail;
-  switch (idType) {
-    case 1:
-      joinTable = "laptop l ON p.idProduct = l.idProduct";
-      columnDetail = colDetail.laptop.map((e) => `'${e}',l.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
-      break;
-    case 2:
-      joinTable = "keyboard k ON p.idProduct = k.idProduct";
-      columnDetail = colDetail.keyboard.map((e) => `'${e}',k.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
-      break;
-    case 3:
-      joinTable = "monitor mo ON p.idProduct = mo.idProduct";
-      columnDetail = colDetail.monitor.map((e) => `'${e}',mo.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
-      break;
-    case 4:
-      joinTable = "ram r ON p.idProduct = r.idProduct";
-      columnDetail = colDetail.ram.map((e) => `'${e}',r.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
-      break;
-    case 5:
-      joinTable = "harddrive h ON p.idProduct = h.idProduct";
-      columnDetail = colDetail.storage.map((e) => `'${e}',h.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
-      break;
-    case 6:
-      joinTable = "vga v ON p.idProduct = v.idProduct";
-      columnDetail = colDetail.vga.map((e) => `'${e}',v.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
-      break;
-    case 7:
-      joinTable = "mouse m ON p.idProduct = m.idProduct";
-      columnDetail = colDetail.mouse.map((e) => `'${e}',m.${e}`).join(", ");
-      infoTable = `CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${columnDetail})),']') AS detail`;
-      break;
-  }
-  const sql = `SELECT p.*,t.nameType,
-      SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) 
-      AS quantity,
-      ${infoTable}
-      FROM products p 
-      LEFT JOIN warehouse w ON p.idProduct = w.idProduct
-      LEFT JOIN ${joinTable}
-      LEFT JOIN type t ON p.idType = t.idType 
-      WHERE p.idType=${idType}
-      GROUP BY p.idProduct
-      `;
+/* New feature */
+export const changeTable = (table,method,column,datatypes) => {
+  const sql = `ALTER TABLE ${table} ${method} COLUMN ${column} ${method === 'add' ? datatypes : ''};`
   return sql;
-};
-
+}
+export const updateDiscount = (discount,listIdProduct) => {
+  const sql = `UPDATE products SET discount = ${discount} WHERE idProduct IN (${listIdProduct.map(e => e)});`;
+  return sql
+}
+/* --- */
 export const getNewProduct = () => {
   const sql = `SELECT p.* ,t.nameType,SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) 
   AS quantity
@@ -165,69 +78,56 @@ export const getNewProduct = () => {
   ORDER BY dateAdded DESC, p.idProduct DESC LIMIT 0,10`;
   return sql;
 };
+export const search = (parseData,keyword) => {
+  const arrDetail = [1,2,3,4]
+  const handleConcat = (index) => {
+    const concatData = parseData.flatMap((e) =>
+      e.detail
+        .filter((d, i) => i === index)
+        .map(
+          (c) => `CONCAT(UPPER('${c.name}'), ':', ${e.type === 'mouse' ? `${e.shortName}u` : e.shortName}.${c.name})`
+        )
+    );
+    return concatData;
+  };
+  const detailResult = arrDetail.map((e,i) => `CONCAT_WS(',', ${handleConcat(i)}) AS detail${e}`)
+  const sql = `SELECT p.*,t.nameType,SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) AS quantity,${detailResult.map(e => e)} FROM products p LEFT JOIN warehouse w ON p.idProduct = w.idProduct LEFT JOIN type t ON p.idType = t.idType ${parseData.map(
+    (e) => `LEFT JOIN ${e.type} ${e.type === 'mouse' ? `${e.shortName}u` : e.shortName} ON p.idProduct = ${e.type === 'mouse' ? `${e.shortName}u` : e.shortName}.idProduct`
+  ).join(' ')} WHERE nameProduct LIKE '%${keyword}%' OR t.nameType LIKE '%${keyword}%' OR brand LIKE '%${keyword}%' GROUP BY p.idProduct ORDER BY p.idProduct;`;
+  return sql
+}
 
-export const searchProduct = (keyword) => {
-  const sql = `SELECT products.*,lo.nameType,SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) 
-      AS quantity,
-      CONCAT_WS(',', CONCAT(UPPER('cpu'), ':', l.cpu), CONCAT(UPPER('capacity'), ':', r.capacity), CONCAT(UPPER('dpi'), ':', m.dpi), CONCAT(UPPER('resolution'), ':', mo.resolution), CONCAT(UPPER('connectionprotocol'), ':', h.connectionprotocol), CONCAT(UPPER('memory'), ':', v.memory), CONCAT(UPPER('layout'), ':', k.layout)) AS detail1,
-      CONCAT_WS(',', CONCAT(UPPER('capacity'), ':', l.capacity), CONCAT(UPPER('busram'), ':', r.busram), CONCAT(UPPER('connection'), ':', m.connection), CONCAT(UPPER('sizeInch'), ':', mo.sizeInch), CONCAT(UPPER('capacitylevels'), ':', h.capacitylevels), CONCAT(UPPER('memoryspeed'), ':', v.memoryspeed), CONCAT(UPPER('connection'), ':', k.connection)) AS detail2,
-      CONCAT_WS(',', CONCAT(UPPER('storage'), ':', l.storage), CONCAT(UPPER('typeram'), ':', r.typeram), CONCAT(UPPER('switch'), ':', m.switch), CONCAT(UPPER('scanfrequency'), ':', mo.scanfrequency), CONCAT(UPPER('size'), ':', h.size), CONCAT(UPPER('heartbeat'), ':', v.heartbeat), CONCAT(UPPER('switch'), ':', k.switch)) AS detail3,
-      CONCAT_WS(',', CONCAT(UPPER('os'), ':', l.os), CONCAT(UPPER('ledlight'), ':', m.ledlight), CONCAT(UPPER('size'), ':', v.size), CONCAT(UPPER('keyboardmaterial'), ':', k.keyboardmaterial)) AS detail4
-      FROM products
-      LEFT JOIN warehouse w ON products.idProduct = w.idProduct
-      LEFT JOIN laptop l ON products.idProduct = l.idProduct
-      LEFT JOIN mouse m ON products.idProduct = m.idProduct
-      LEFT JOIN monitor mo ON products.idProduct = mo.idProduct
-      LEFT JOIN ram r ON products.idProduct = r.idProduct
-      LEFT JOIN harddrive h ON products.idProduct = h.idProduct
-      LEFT JOIN vga v ON products.idProduct = v.idProduct
-      LEFT JOIN keyboard k ON products.idProduct = k.idProduct
-      LEFT JOIN type ON products.idType = type.idType
-      LEFT JOIN type lo ON products.idType=lo.idType 
-      WHERE nameProduct LIKE '%${keyword}%' OR lo.nameType LIKE '%${keyword}%' OR brand LIKE '%${keyword}%'
-      GROUP BY products.idProduct
-      ORDER BY products.idProduct;`;
+export const getCol = (nameType) => {
+  const sql = `SELECT name,datatypes FROM typedetail WHERE type = '${nameType}';`;
   return sql;
-};
+}
+
 export const productInsertInfo = (listData) => {
-  const sql = `INSERT INTO products(nameProduct,price,imgProduct,dateAdded,idType,brand)VALUES('${listData[0]}',${listData[1]},'${listData[2]}','${listData[3]}',${listData[4]},'${listData[5]}')`;
+  const sql = `INSERT INTO products(nameProduct,price,imgProduct,dateAdded,idType,brand)
+  SELECT '${listData[0]}',${listData[1]},'${listData[2]}','${listData[3]}',idType,'${listData[5]}'
+  FROM type
+  WHERE nameType = '${listData[4]}';
+  `
   return sql;
 };
-export const productInsertDetail = (idType, productValue) => {
-  let newIdType = Number(idType);
-  let table;
-  switch (newIdType) {
-    case 1:
-      table = `laptop(idProduct,cpu,capacity,maxram,storage,os,resolution,sizeInch,battery,material)`;
-      break;
-    case 2:
-      table = `keyboard(idProduct,layout,connection,switch,keyboardmaterial,material,weight)`;
-      break;
-    case 3:
-      table = `monitor(idProduct,resolution,scanfrequency,brightness,contrast,viewing_angle,response_time,connector)`;
-      break;
-    case 4:
-      table = `ram(idProduct,capacity,busram,typeram,speed,latency,voltage,color)`;
-      break;
-    case 5:
-      table = `harddrive(idProduct,connectionprotocol,capacitylevels,size)`;
-      break;
-    case 6:
-      table = `vga(idProduct,memory,memoryspeed,heartbeat,size,resolution,numberOfDisplayPort,numberOfHDMI,support)`;
-      break;
-    case 7:
-      table = `mouse(idProduct,dpi,connection,switch,ledlight,type,number_of_button,size,weight)`;
-      break;
-  }
-  const sql = `INSERT INTO ${table}VALUES(${productValue})`;
-  return sql;
-};
+export const insertProductDetail = (table,idProduct,results,data) => {
+  const lastResult = results.map(e => `${e.name}`)
+  const values = results.map(e => e.datatypes === 'text' ?  `'${data[e.name]}'` : data[e.name])
+  const sql = `INSERT INTO ${table}(idProduct,${lastResult})VALUES(${idProduct},${values})`;
+  return sql
+}
 
 export const productUpdate = (idProduct, data) => {
   const sql = `UPDATE products SET nameProduct = ${data[0]},price = ${data[1]},imgProduct = '${data[2]}',
   dateAdded = '${data[3]}',idType = ${data[4]},brand = ${data[5]} WHERE idProduct = ${idProduct}`;
   return sql;
 };
+/* change it */
+export const updateDetail = (arrCol,idProduct,data,nameType) => {
+  const valueUpdate = arrCol.map(e => `${e.name} = ${e.datatypes === 'text' ? `'${data[e.name]}'` : data[e.name]}`)
+  const sql = `UPDATE ${nameType} SET ${valueUpdate} WHERE idProduct = ${idProduct};`;
+  return sql;
+}
 export const productUpdateDetail = (idType, idProduct, listData) => {
   let table;
   switch (idType) {
