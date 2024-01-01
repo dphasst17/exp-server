@@ -21,7 +21,7 @@ export const getAllProduct = (parseData) => {
   ).join(' ')} GROUP BY p.idProduct ORDER BY p.idProduct;`;
   return sql
 }
-/* SELECT TABLE_NAME,COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME IN ('laptop','keyboard','memory','monitor','storage','mouse','vga','phone') AND COLUMN_NAME NOT IN ('id', 'idProduct'); */
+
 export const getProductDetail = (results,name,shortName,idProduct) => {
   const colDetail = results.map((e) => e.COLUMN_NAME);
     const colQuery = colDetail.map(
@@ -128,40 +128,6 @@ export const updateDetail = (arrCol,idProduct,data,nameType) => {
   const sql = `UPDATE ${nameType} SET ${valueUpdate} WHERE idProduct = ${idProduct};`;
   return sql;
 }
-export const productUpdateDetail = (idType, idProduct, listData) => {
-  let table;
-  switch (idType) {
-    case "1":
-      table = `laptop SET cpu = '${listData[0]}',capacity = '${listData[1]}',maxram = '${listData[2]}',storage = '${listData[3]}',
-      os = '${listData[4]}',resolution = '${listData[5]}',sizeInch = ${listData[6]},battery = '${listData[7]}',material = '${listData[8]}'`;
-      break;
-    case "2":
-      table = `keyboard SET layout = ${listData[0]},connection = ${listData[1]},switch = ${listData[2]},
-      keyboardmaterial = ${listData[3]},material = ${listData[4]},weight = ${listData[5]}`;
-      break;
-    case "3":
-      table = `monitor SET resolution = ${listData[0]},scanfrequency = ${listData[1]},brightness = ${listData[2]},
-      contrast = ${listData[3]},viewing_angle = ${listData[4]},response_time = ${listData[5]},connector = ${listData[6]}`;
-      break;
-    case "4":
-      table = `ram SET capacity = ${listData[0]},busram = ${listData[1]},typeram = ${listData[2]},speed = ${listData[3]},
-      latency = ${listData[4]},voltage = ${listData[5]},color = ${listData[6]}`;
-      break;
-    case "5":
-      table = `harddrive SET connectionprotocol = ${listData[0]},capacitylevels = ${listData[1]},size = ${listData[2]}`;
-      break;
-    case "6":
-      table = `vga SET memory = ${listData[0]},memoryspeed = ${listData[1]},heartbeat = ${listData[2]},size = ${listData[3]},
-      resolution = ${listData[4]},numberOfDisplayPort = ${listData[5]},numberOfHDMI = ${listData[6]},support = ${listData[7]}`;
-      break;
-    case "7":
-      table = `mouse SET dpi = ${listData[0]},connection = ${listData[1]},switch = ${listData[2]},ledlight = ${listData[3]},
-      type = ${listData[4]},number_of_button = ${listData[5]},size = ${listData[6]},weight = ${listData[7]}`;
-      break;
-  }
-  const sql = `UPDATE ${table} WHERE idProduct = ${idProduct}`;
-  return sql;
-};
 
 export const productAddImg = (idProduct, arrImg) => {
   const resultArr = arrImg.map(e => `(${idProduct},'extra','${e}')`)
