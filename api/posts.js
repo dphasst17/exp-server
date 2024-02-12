@@ -1,6 +1,8 @@
 import express from "express";
 import { poolConnectDB } from "../db/connect.js";
-import * as sqlQuery from "../db/statement/posts.js"
+import * as sqlQuery from "../db/statement/posts.js";
+import * as response from "../utils/handler.js";
+import * as message from "../utils/message.js";
 import {verify} from "../middleware/middleware.js";
 import jsdom from "jsdom"
 const { JSDOM } = jsdom;
@@ -9,13 +11,8 @@ const pool = poolConnectDB();
 router.get("/",(req,res) => {
     const sql = sqlQuery.postGetAll();
     pool.query(sql,(err,results) => {
-        if(err){
-            res.status(500).json({
-                status:500,
-                message: "A server error occurred. Please try again in 5 minutes."
-            });
-            return;
-        }
+        response.errResponseMessage(res,err,500,message.err500Message())
+        
         res.status(200).json(results.map(obj => {
             let dom = new JSDOM(obj.valuesPosts);
           
@@ -39,14 +36,8 @@ router.post("/insert",verify,(req,res) => {
     const data = req.body;
     const sql = sqlQuery.postsInsert(data.date,data.type,idUser,data.value)
     pool.query(sql,(err,results) => {
-        if(err){
-            res.status(500).json({
-                err:err,
-                status:500,
-                message: "A server error occurred. Please try again in 5 minutes."
-            });
-            return;
-        }
+        response.errResponseMessage(res,err,500,message.err500Message())
+        
         res.status(201).json({message:'Create posts is success'})
     })
 })
@@ -54,13 +45,8 @@ router.get("/get/:idPosts",(req,res) => {
     const idPosts = req.params['idPosts']
     const sql = sqlQuery.postGetOne(idPosts)
     pool.query(sql,(err,results) => {
-        if(err){
-            res.status(500).json({
-                status:500,
-                message: "A server error occurred. Please try again in 5 minutes."
-            });
-            return;
-        }
+        response.errResponseMessage(res,err,500,message.err500Message())
+        
         res.status(200).json(results.map(e => {
             return {
                 ...e,

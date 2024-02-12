@@ -3,21 +3,16 @@ import dotenv from "dotenv";
 import { poolConnectDB } from "../db/connect.js";
 import { filterData } from "../middleware/middleware.js";
 import * as sqlQuery from "../db/statement/product.js";
+import * as response from "../utils/handler.js"
+import * as message from "../utils/message.js"
 const router = express.Router();
 dotenv.config();
 const pool = poolConnectDB();
-
 router.get("/search/:keyword", (req, res) => {
   const keyword = req.params["keyword"];
   const getCol = sqlQuery.getColDemo();
   pool.query(getCol, (err, results) => {
-    if (err) {
-      res.status(500).json({
-        status: 500,
-        message: "A server error occurred. Please try again in 5 minutes.",
-      });
-      return;
-    }
+    response.errResponseMessage(res,err,500,message.err500Message())
     const parseData = results.map((e) => {
       return {
         ...e,
@@ -27,13 +22,7 @@ router.get("/search/:keyword", (req, res) => {
     });
     const sql = sqlQuery.search(parseData, keyword);
     pool.query(sql, (errRes, lastResult) => {
-      if (errRes) {
-        res.status(500).json({
-          status: 500,
-          message: "A server error occurred. Please try again in 5 minutes.",
-        });
-        return;
-      }
+      response.errResponseMessage(res,errRes,500,message.err500Message())
       res.json(lastResult);
     });
   });
@@ -41,13 +30,8 @@ router.get("/search/:keyword", (req, res) => {
 router.get("/", (req, res) => {
   const getCol = sqlQuery.getColDemo();
   pool.query(getCol, (err, results) => {
-    if (err) {
-      res.status(500).json({
-        status: 500,
-        message: "A server error occurred. Please try again in 5 minutes.",
-      });
-      return;
-    }
+    response.errResponseMessage(res,err,500,message.err500Message())
+
     const parseData = results.map((e) => {
       return {
         ...e,
@@ -57,29 +41,34 @@ router.get("/", (req, res) => {
     });
     const sql = sqlQuery.getAllProduct(parseData);
     pool.query(sql, (errRes, lastResult) => {
-      if (errRes) {
-        res.status(500).json({
-          status: 500,
-          message: "A server error occurred. Please try again in 5 minutes.",
-        });
-        return;
-      }
-      res.json(lastResult);
+      response.errResponseMessage(res,errRes,500,message.err500Message())
+
+      res.status(200).json(lastResult);
     });
   });
 });
-
+router.get('/sale',(req,res) => {
+  const currentDate = new Date().toISOString().split('T')[0]
+  const sql = sqlQuery.getProductSale(currentDate);
+  pool.query(sql,(err,results) => {
+    response.errResponseMessage(res,err,500,message.err500Message())
+    const parseData = results.map(e => {
+      return {
+        ...e,
+        startDate:response.formatDate(e.startDate),
+        endDate:response.formatDate(e.endDate),
+        detail:JSON.parse(e.detail)
+      }
+    })
+    response.successResponseData(res,200,parseData)
+  })
+})
 router.get("/new", (req, res) => {
   let sql = sqlQuery.getNewProduct();
   pool.query(sql, function (err, results) {
-    if (err) {
-      res.status(500).json({
-        status: 500,
-        message: "A server error occurred. Please try again in 5 minutes.",
-      });
-      return;
-    }
-    res.json(results);
+    response.errResponseMessage(res,err,500,message.err500Message())
+
+    res.status(200).json(results);
   });
 });
 router.get("/type/:type", (req, res) => {
@@ -87,23 +76,13 @@ router.get("/type/:type", (req, res) => {
   const shortName = name.split("")[0];
   const sql = sqlQuery.getColDetail(name);
   pool.query(sql, (err, results) => {
-    if (err) {
-      res.status(500).json({
-        status: 500,
-        message: "A server error occurred. Please try again in 5 minutes.",
-      });
-      return;
-    }
+    response.errResponseMessage(res,err,500,message.err500Message())
+
     const sqlResult = sqlQuery.getProductDetailByType(results, name, shortName);
     pool.query(sqlResult, (lastErr, lastResult) => {
-      if (lastErr) {
-        res.status(500).json({
-          status: 500,
-          message: "A server error occurred. Please try again in 5 minutes.",
-        });
-        return;
-      }
-      res.json(
+      response.errResponseMessage(res,lastErr,500,message.err500Message())
+      
+      res.status(200).json(
         lastResult.map((e) => {
           return {
             ...e,
@@ -120,13 +99,8 @@ router.get("/detail/get/:nameType/:idProduct", (req, res) => {
   const shortName = nameType.slice(0, 2);
   const sql = sqlQuery.getColDetail(nameType);
   pool.query(sql, (err, results) => {
-    if (err) {
-      res.status(500).json({
-        status: 500,
-        message: "A server error occurred. Please try again in 5 minutes.",
-      });
-      return;
-    }
+    response.errResponseMessage(res,err,500,message.err500Message())
+
     const sql = sqlQuery.getProductDetail(
       results,
       nameType,
@@ -134,15 +108,9 @@ router.get("/detail/get/:nameType/:idProduct", (req, res) => {
       idProduct
     );
     pool.query(sql, (lastErr, lastResult) => {
-      if (lastErr) {
-        res.status(500).json({
-          last: lastErr,
-          status: 500,
-          message: "A server error occurred. Please try again in 5 minutes.",
-        });
-        return;
-      }
-      res.json(
+      response.errResponseMessage(res,lastErr,500,message.err500Message())
+
+      res.status(200).json(
         lastResult.map((e) => {
           let subImg = JSON.parse(e.img);
           let formatResult = {
@@ -169,27 +137,16 @@ router.post("/insert/type", filterData, (req, res) => {
   const sql = sqlQuery.createNewTypeTB(tbName, arr);
   const addInfoTable = sqlQuery.addInfoTable(tbName, arr);
   pool.query(sqlInsert, (err, results) => {
-    if (err) {
-      res.status(500).json({
-        message: "A server error occurred. Please try again in 5 minutes.",
-      });
-      return;
-    }
+    response.errResponseMessage(res,err,500,message.err500Message())
+
     pool.query(sql, (error, resultInsert) => {
-      if (error) {
-        res.status(500).json({
-          message: "A server error occurred. Please try again in 5 minutes.",
-        });
-        return;
-      }
+      response.errResponseMessage(res,error,500,message.err500Message())
+
       pool.query(addInfoTable, (errs, addResult) => {
-        if (errs) {
-          res.status(500).json({
-            message: "A server error occurred. Please try again in 5 minutes.",
-          });
-          return;
-        }
-        res.status(201).json({ status: 201, message: "Create success" });
+        response.errResponseMessage(res,errs,500,message.err500Message())
+
+        response.successResponseMessage(res,201,message.createItemsMessage('the new type'))
+        /* res.status(201).json({ status: 201, message: "Create success" }); */
       });
     });
   });
@@ -197,12 +154,8 @@ router.post("/insert/type", filterData, (req, res) => {
 router.get("/info/type", (req, res) => {
   const sql = sqlQuery.getInfoType();
   pool.query(sql, (err, results) => {
-    if (err) {
-      res.status(500).json({
-        message: "A server error occurred. Please try again in 5 minutes.",
-      });
-      return;
-    }
+    response.errResponseMessage(res,err,500,message.err500Message())
+   
     const parseData = results.map((e) => {
       return { ...e, detail: JSON.parse(e.detail) };
     });
@@ -214,46 +167,29 @@ router.get("/info/type", (req, res) => {
     });
   });
 });
-/* new feature is here */
-/* change column in the table (add || drop), method: post, endpoint: '/column/:method/:table',body:JSON.stringify({column:'',datatypes:''}) */
+// add column or drop column in table
 router.post("/column/:method/:table", filterData, (req, res) => {
   const table = req.params["table"];
   const method = req.params["method"];
   const data = req.result;
   const sql = sqlQuery.changeTable(table, method, data.column, data.datatypes);
   pool.query(sql, (err, results) => {
-    if (err) {
-      res.status(500).json({
-        message: "A server error occurred. Please try again in 5 minutes.",
-      });
-      return;
-    }
-    res.status(201).json({ status: 201, message: "Success" });
+    response.errResponseMessage(res,err,500,message.err500Message())
+    response.successResponseMessage(res,201,method === 'add' ? message.createItemsMessage(data.column) : message.removeItemsMessage(data.column))
   });
 });
-/* New feature */
+//change it
 router.post("/discount", filterData, (req, res) => {
   const data = req.result;
   const listIdProduct = data.list;
   const sql = sqlQuery.updateDiscount(data.discount, listIdProduct);
   pool.query(sql, (err, results) => {
-    if (err) {
-      res.status(500).json({
-        message: "A server error occurred. Please try again in 5 minutes.",
-      });
-      return;
-    }
-    res.status(200).json({ status: 201, message: "Update success" });
+    response.errResponseMessage(res,err,500,message.err500Message())
+
+    res.status(200).json({ status: 201, message: "Update discount success" });
   });
 });
-/*  */
-router.get("/test/insert/:nameType", (req, res) => {
-  const nameType = req.params["nameType"];
-  const sql = `SELECT name,datatypes FROM typedetail WHERE type = '${nameType}'`;
-  pool.query(sql, (err, results) => {
-    res.json(results);
-  });
-});
+
 router.post("/insert", filterData, (req, res) => {
   const data = req.result;
   const folder = data.folder;
@@ -264,15 +200,12 @@ router.post("/insert", filterData, (req, res) => {
 
   const sqlGetCol = sqlQuery.getCol(productInf[4]);
   pool.query(sqlProduct, (errProduct, resultProduct) => {
-    if (errProduct) {
-      res.status(500).json({
-        errProduct: errProduct,
-        message: "A server error occurred. Please try again in 5 minutes.",
-      });
-      return;
-    }
+    response.errResponseMessage(res,errProduct,500,message.err500Message())
+
     const idProduct = resultProduct.insertId;
     pool.query(sqlGetCol, (err, results) => {
+      response.errResponseMessage(res,err,500,message.err500Message())
+
       const sqlDetail = sqlQuery.insertProductDetail(
         productInf[4],
         idProduct,
@@ -280,13 +213,7 @@ router.post("/insert", filterData, (req, res) => {
         detail
       );
       pool.query(sqlDetail, (errDetail, resultDetail) => {
-        if (errDetail) {
-          res.status(500).json({
-            errDetail: errDetail,
-            message: "A server error occurred. Please try again in 5 minutes.",
-          });
-          return;
-        }
+        response.errResponseMessage(res,errDetail,500,message.err500Message())
         res
           .status(201)
           .json({ status: 201, message: "Add product to success" });
@@ -294,6 +221,7 @@ router.post("/insert", filterData, (req, res) => {
     });
   });
 });
+
 router.put("/update/:nameType/:idProduct", filterData, (req, res) => {
   const data = req.result;
   const idProduct = req.params["idProduct"];
@@ -315,21 +243,11 @@ router.put("/update/:nameType/:idProduct", filterData, (req, res) => {
   const sql = sqlQuery.productUpdate(idProduct, product);
   const sqlGetCol = sqlQuery.getCol(nameType);
   pool.query(sql, (err, result) => {
-    if (err) {
-      res.status(500).json({
-        err: err,
-        message: "A server error occurred. Please try again in 5 minutes.",
-      });
-      return;
-    }
+    response.errResponseMessage(res,err,500,message.err500Message())
+
     pool.query(sqlGetCol, (errCol, results) => {
-      if (errCol) {
-        res.status(500).json({
-          errCol: errCol,
-          message: "A server error occurred. Please try again in 5 minutes.",
-        });
-        return;
-      }
+      response.errResponseMessage(res,errCol,500,message.err500Message())
+
       const sqlUpdateDetail = sqlQuery.updateDetail(
         results,
         idProduct,
@@ -337,14 +255,9 @@ router.put("/update/:nameType/:idProduct", filterData, (req, res) => {
         nameType
       );
       pool.query(sqlUpdateDetail, (errDetail, resultDetail) => {
-        if (errDetail) {
-          res.status(500).json({
-            errDetail: errDetail,
-            message: "A server error occurred. Please try again in 5 minutes.",
-          });
-          return;
-        }
-        res.status(200).json({ status: 200, message: "Update to success" });
+        response.errResponseMessage(res,errDetail,500,message.err500Message())
+        response.successResponseMessage(res,200,message.updateItemsMessage('product'))
+        /* res.status(200).json({ status: 200, message: "Update to success" }); */
       });
     });
   });
@@ -360,13 +273,8 @@ router.post("/image/add/:idProduct", (req, res) => {
   }
   const sql = sqlQuery.productAddImg(idProduct, dataUrl);
   pool.query(sql, (err, results) => {
-    if (err) {
-      res.status(500).json({
-        status: 500,
-        message: "A server error occurred. Please try again in 5 minutes.",
-      });
-      return;
-    }
+    response.errResponseMessage(res,err,500,message.err500Message())
+
     res.status(201).json({ status: 201, message: "Add image to success" });
   });
 });
@@ -374,13 +282,8 @@ router.delete("/delete/:idProduct", filterData, (req, res) => {
   const idProduct = req.params["idProduct"];
   const sql = sqlQuery.productDelete(idProduct);
   pool.query(sql, (err, results) => {
-    if (err) {
-      res.status(500).json({
-        status: 500,
-        message: "A server error occurred. Please try again in 5 minutes.",
-      });
-      return;
-    }
+    response.errResponseMessage(res,err,500,message.err500Message())
+
     res.status(200).json({ message: "Delete product to success" });
   });
 });
@@ -389,13 +292,8 @@ router.delete("/list/delete", filterData, (req, res) => {
   const list_cart = data.list.join(",");
   const sql = sqlQuery.productDeleteList(list_cart);
   pool.query(sql, (err, results) => {
-    if (err) {
-      res.status(500).json({
-        status: 500,
-        message: "A server error occurred. Please try again in 5 minutes.",
-      });
-      return;
-    }
+    response.errResponseMessage(res,err,500,message.err500Message())
+    
     res.status(200).json({ message: "Delete success" });
   });
 });

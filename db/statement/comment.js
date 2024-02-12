@@ -9,7 +9,7 @@ export const commentGetAll = () => {
 }
 export const getCommentByIdProduct = (idProduct) => {
     const sql = `SELECT p.idProduct, p.nameProduct, p.imgProduct,
-    IFNULL(CONCAT('[', GROUP_CONCAT(JSON_OBJECT('idUser', c.idUser,'nameUser',u.nameUser,'img',u.img, 'commentValue', c.commentValue, 'dateComment', c.dateComment)), ']'), '[]') AS detail
+    IFNULL(CONCAT('[', GROUP_CONCAT(JSON_OBJECT('idUser', c.idUser,'nameUser',u.nameUser,'img',u.img, 'commentValue', c.commentValue, 'dateComment', c.dateComment) ORDER BY c.dateComment DESC), ']'), '[]') AS detail
 FROM products p
 LEFT JOIN comments c ON p.idProduct = c.idProduct
 LEFT JOIN users u ON c.idUser = u.idUser

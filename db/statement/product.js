@@ -16,9 +16,17 @@ export const getAllProduct = (parseData) => {
     return concatData;
   };
   const detailResult = arrDetail.map((e,i) => `CONCAT_WS(',', ${handleConcat(i)}) AS detail${e}`)
-  const sql = `SELECT p.*,t.nameType,SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) AS quantity,${detailResult.map(e => e)} FROM products p LEFT JOIN warehouse w ON p.idProduct = w.idProduct LEFT JOIN type t ON p.idType = t.idType ${parseData.map(
+  const sql = `SELECT p.*,IF(sale.end_date >= CURDATE() AND sale.start_date <= CURDATE(), IFNULL(sd.discount, 0), 0) AS discount,
+  t.nameType,SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) AS quantity,${detailResult.map(e => e)} 
+  FROM products p 
+  LEFT JOIN warehouse w ON p.idProduct = w.idProduct 
+  LEFT JOIN type t ON p.idType = t.idType 
+  LEFT JOIN saleDetail sd ON p.idProduct = sd.idProduct 
+  LEFT JOIN sale ON sd.idSale = sale.idSale
+  ${parseData.map(
     (e) => `LEFT JOIN ${e.type} ${e.type === 'mouse' ? `${e.shortName}u` : e.shortName} ON p.idProduct = ${e.type === 'mouse' ? `${e.shortName}u` : e.shortName}.idProduct`
-  ).join(' ')} GROUP BY p.idProduct ORDER BY p.idProduct;`;
+  ).join(' ')} 
+  GROUP BY p.idProduct ORDER BY p.idProduct;`;
   return sql
 }
 
@@ -27,12 +35,16 @@ export const getProductDetail = (results,name,shortName,idProduct) => {
     const colQuery = colDetail.map(
       (e) => `'${e}',${shortName}.${e}`
     )
-    const sql = `SELECT p.*,t.nameType,SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) AS quantity,
+    const sql = `SELECT p.*,t.nameType,
+    IF(sale.end_date >= CURDATE() AND sale.start_date <= CURDATE(), IFNULL(sd.discount, 0), 0) AS discount,
+    SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) AS quantity,
     CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${colQuery})),']') AS detail ,
     CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT('type',i.type,'img',i.img)),']')AS img
     FROM products p 
     LEFT JOIN warehouse w ON p.idProduct = w.idProduct
     LEFT JOIN type t ON p.idType = t.idType 
+    LEFT JOIN saleDetail sd ON p.idProduct = sd.idProduct 
+    LEFT JOIN sale ON sd.idSale = sale.idSale
     LEFT JOIN ${name} ${shortName} ON p.idProduct = ${shortName}.idProduct
     LEFT JOIN imageProduct i ON p.idProduct = i.idProduct
     WHERE p.idProduct=${idProduct}
@@ -48,11 +60,15 @@ export const getProductDetailByType = (results,name,shortName) => {
     const colQuery = colDetail.map(
       (e) => `'${e}',${shortName}.${e}`
     )
-    const sql = `SELECT product.*,t.nameType,SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) AS quantity,
+    const sql = `SELECT product.*,t.nameType,
+    IF(sale.end_date >= CURDATE() AND sale.start_date <= CURDATE(), IFNULL(sd.discount, 0), 0) AS discount,
+    SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) AS quantity,
     CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT(${colQuery})),']') AS detail 
     FROM products product 
     LEFT JOIN warehouse w ON product.idProduct = w.idProduct
     LEFT JOIN type t ON product.idType = t.idType 
+    LEFT JOIN saleDetail sd ON product.idProduct = sd.idProduct 
+    LEFT JOIN sale ON sd.idSale = sale.idSale
     LEFT JOIN ${name} ${shortName} ON product.idProduct = ${shortName}.idProduct
     WHERE t.nameType = '${name}'
     GROUP BY product.idProduct;`;
@@ -68,12 +84,26 @@ export const updateDiscount = (discount,listIdProduct) => {
   return sql
 }
 /* --- */
+export const getProductSale = (currentDate) => {
+  const sql = `SELECT s.idSale,title,(start_date) AS startDate,(end_date) AS endDate,
+  CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT('id',sd.id,'idProduct',p.idProduct,'nameProduct',p.nameProduct,'imgProduct',p.imgProduct,'price',p.price,'discount',sd.discount,'idType',p.idType,'type',t.nameType,'brand',p.brand)),']') AS detail
+  FROM sale s 
+  LEFT JOIN saleDetail sd ON s.idSale = sd.idSale 
+  LEFT JOIN products p ON sd.idProduct = p.idProduct
+  LEFT JOIN type t ON p.idType = t.idType
+  WHERE s.start_date <= '${currentDate}' AND end_date >= '${currentDate}'
+  GROUP BY s.idSale`;
+  return sql
+}
 export const getNewProduct = () => {
-  const sql = `SELECT p.* ,t.nameType,SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) 
-  AS quantity
+  const sql = `SELECT p.* ,t.nameType,
+  IF(sale.end_date >= CURDATE() AND sale.start_date <= CURDATE(), IFNULL(sd.discount, 0), 0) AS discount,
+  SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) AS quantity
   FROM products p 
   LEFT JOIN warehouse w ON p.idProduct = w.idProduct
   LEFT JOIN type t ON p.idType = t.idType
+  LEFT JOIN saleDetail sd ON p.idProduct = sd.idProduct 
+    LEFT JOIN sale ON sd.idSale = sale.idSale
   GROUP BY p.idProduct 
   ORDER BY dateAdded DESC, p.idProduct DESC LIMIT 0,10`;
   return sql;
@@ -91,9 +121,21 @@ export const search = (parseData,keyword) => {
     return concatData;
   };
   const detailResult = arrDetail.map((e,i) => `CONCAT_WS(',', ${handleConcat(i)}) AS detail${e}`)
-  const sql = `SELECT p.*,t.nameType,SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) AS quantity,${detailResult.map(e => e)} FROM products p LEFT JOIN warehouse w ON p.idProduct = w.idProduct LEFT JOIN type t ON p.idType = t.idType ${parseData.map(
+  const sql = `SELECT p.*,t.nameType,
+  IF(sale.end_date >= CURDATE() AND sale.start_date <= CURDATE(), IFNULL(sd.discount, 0), 0) AS discount,
+  SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) AS quantity,
+  ${detailResult.map(e => e)} 
+  FROM products p 
+  LEFT JOIN warehouse w ON p.idProduct = w.idProduct 
+  LEFT JOIN type t ON p.idType = t.idType 
+  LEFT JOIN saleDetail sd ON p.idProduct = sd.idProduct 
+  LEFT JOIN sale ON sd.idSale = sale.idSale
+  ${parseData.map(
     (e) => `LEFT JOIN ${e.type} ${e.type === 'mouse' ? `${e.shortName}u` : e.shortName} ON p.idProduct = ${e.type === 'mouse' ? `${e.shortName}u` : e.shortName}.idProduct`
-  ).join(' ')} WHERE nameProduct LIKE '%${keyword}%' OR t.nameType LIKE '%${keyword}%' OR brand LIKE '%${keyword}%' GROUP BY p.idProduct ORDER BY p.idProduct;`;
+  ).join(' ')} 
+  WHERE nameProduct LIKE '%${keyword}%' OR t.nameType LIKE '%${keyword}%' OR brand LIKE '%${keyword}%' 
+  GROUP BY p.idProduct 
+  ORDER BY p.idProduct;`;
   return sql
 }
 

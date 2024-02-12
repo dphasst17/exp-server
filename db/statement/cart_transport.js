@@ -52,9 +52,13 @@ export const transDetailInsert = (idTrans,idProduct,count) => {
     return sql;
 }
 export const transDetailInsertInList = (listId,idTrans) => {
-    const sql = `INSERT INTO transDetail(idTrans,idProduct,countProduct,status)
-    SELECT '${idTrans}'AS idTrans,idProduct,countProduct,'Chờ xác nhận'AS status
-    FROM carts WHERE idCart IN (${listId})`;
+    const sql = `INSERT INTO transDetail(idTrans,idProduct,countProduct,discount,status)
+    SELECT '${idTrans}'AS idTrans,p.idProduct,countProduct,IF(sale.end_date >= CURDATE() AND sale.start_date <= CURDATE(), IFNULL(sd.discount, 0), 0) AS discount,'Chờ xác nhận'AS status
+    FROM carts c 
+    LEFT JOIN products p ON p.idProduct = c.idProduct 
+    LEFT JOIN saleDetail sd ON p.idProduct = sd.idProduct
+    LEFT JOIN sale sale ON sale.idSale = sd.idSale
+    WHERE c.idCart IN (${listId})`;
     return sql;
 }
 export const transportsSelectAll = () => {
@@ -69,9 +73,11 @@ export const transportsSelectOne = (idTrans) => {
     return sql;
 }
 export const transportsSelectByUser = (idUser) => {
-    const sql = `SELECT t.*,CONCAT('[',GROUP_CONCAT(JSON_OBJECT('idTransDetail',d.idTransDetail,'idProduct',d.idProduct,'name',p.nameProduct,'price',p.price,'count',d.countProduct,'status',d.status)),']') AS detail FROM transports t 
+    const sql = `SELECT t.*,(u.nameUser) AS shipper,CONCAT('[',GROUP_CONCAT(JSON_OBJECT('idTransDetail',d.idTransDetail,'idProduct',d.idProduct,'name',p.nameProduct,'price',p.price,'count',d.countProduct,'status',d.status)),']') AS detail 
+        FROM transports t 
         LEFT JOIN transDetail d ON t.idTrans = d.idTrans
         LEFT JOIN products p ON d.idProduct = p.idProduct 
+        LEFT JOIN users u ON t.idShipper = u.idUser
         WHERE t.idUser = '${idUser}' GROUP BY t.idTrans`;
     return sql;
 }
