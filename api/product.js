@@ -50,17 +50,20 @@ router.get("/", (req, res) => {
 router.get('/sale',(req,res) => {
   const currentDate = new Date().toISOString().split('T')[0]
   const sql = sqlQuery.getProductSale(currentDate);
-  pool.query(sql,(err,results) => {
-    response.errResponseMessage(res,err,500,message.err500Message())
-    const parseData = results.map(e => {
-      return {
-        ...e,
-        startDate:response.formatDate(e.startDate),
-        endDate:response.formatDate(e.endDate),
-        detail:JSON.parse(e.detail)
-      }
+  pool.query('SET SESSION group_concat_max_len = 1000000;',(errTest,resultsTest) => {
+
+    pool.query(sql,(err,results) => {
+      response.errResponseMessage(res,err,500,message.err500Message())
+      const parseData = results.map(e => {
+        return {
+          ...e,
+          startDate:response.formatDate(e.startDate),
+          endDate:response.formatDate(e.endDate),
+          detail:JSON.parse(e.detail)
+        }
+      })
+      response.successResponseData(res,200,parseData)
     })
-    response.successResponseData(res,200,parseData)
   })
 })
 router.get("/new", (req, res) => {
