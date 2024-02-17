@@ -8,6 +8,7 @@ import authRouter from "./user/auth.js";
 import userRouter from "./user/user.js";
 import commentRouter from "./api/comment.js";
 import postsRouter from "./api/posts.js"
+import oderRouter from "./api/order.js"
 import statisticalRouter from "./api/statistical.js";
 import {
   filterData,
@@ -90,6 +91,7 @@ const routerArr = [
   { path: "ware", routes: wareRouter },
   { path: "statistical", routes: statisticalRouter },
   { path: "posts", routes: postsRouter },
+  { path: "order", routes: oderRouter },
 ];
 routerArr.map((e) => app.use(`/api/${e.path}`, e.routes));
 app.use("/auth", authRouter);

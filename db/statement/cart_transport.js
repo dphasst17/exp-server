@@ -62,11 +62,15 @@ export const transDetailInsertInList = (listId,idTrans) => {
     return sql;
 }
 export const transportsSelectAll = () => {
-    const sql = `SELECT t.*,CONCAT('[',GROUP_CONCAT(JSON_OBJECT('idProduct',d.idProduct,'count',d.countProduct,'status',d.status)),']') AS detail FROM transports t JOIN transDetail d ON t.idTrans = d.idTrans GROUP BY t.idTrans`;
+    /* CONCAT('[',GROUP_CONCAT(JSON_OBJECT('idProduct',d.idProduct,'count',d.countProduct,'status',d.status)),']') AS detail */
+    const sql = `SELECT t.* FROM transports t JOIN transDetail d ON t.idTrans = d.idTrans GROUP BY t.idTrans`;
     return sql;
 }
 export const transportsSelectOne = (idTrans) => {
-    const sql = `SELECT t.*,CONCAT('[',GROUP_CONCAT(JSON_OBJECT('idTransDetail',d.idTransDetail,'idProduct',d.idProduct,'name',p.nameProduct,'price',p.price,'count',d.countProduct,'status',d.status)),']') AS detail FROM transports t 
+    const sql = `SELECT t.*,
+        CONCAT('[',GROUP_CONCAT(JSON_OBJECT('idTransDetail',d.idTransDetail,'idProduct',d.idProduct,'name',p.nameProduct,'price',p.price,'count',d.countProduct,'discount',d.discount,'status',d.status)),']') 
+        AS detail 
+        FROM transports t 
         LEFT JOIN transDetail d ON t.idTrans = d.idTrans
         LEFT JOIN products p ON d.idProduct = p.idProduct 
         WHERE t.idTrans = '${idTrans}' GROUP BY t.idTrans`;
@@ -85,6 +89,10 @@ export const transDetailUpdateStatus = (idTrans,status) => {
     const sql = `UPDATE transDetail SET status = '${status}' WHERE idTrans = '${idTrans}';`
     return sql;
 }
+export const transUpdateShipper = (idTrans,shipper) => {
+    const sql = `UPDATE transports SET idShipper = '${shipper}' WHERE idTrans = '${idTrans}';`
+    return sql;
+}
 export const transportsDelete = (idTrans) => {
     const sql = `DELETE FROM transports WHERE idTrans = '${idTrans}'`;
     return sql;
@@ -99,13 +107,13 @@ export const transDetailDeleteOne = (list) => {
 }
 export const insertFailOrder = (idTrans) => {
     const sql = `INSERT INTO failorder(idFail,idUser,infoOrder)
-    SELECT t.idTrans,t.idUser,CONCAT('name:',t.fullName,' - phone: ',t.phone,' - address: ',t.address)AS infoOrder 
-    FROM transports t JOIN transDetail d ON t.idTrans = d.idTrans
-    WHERE d.idTrans = '${idTrans}'`;
+    SELECT idTrans,idUser,CONCAT('name:',fullName,' - phone: ',phone,' - address: ',address)AS infoOrder 
+    FROM transports 
+    WHERE idTrans = '${idTrans}'`;
     return sql;
 }
 export const insertFailOrderDetail = (idTrans) => {
-    const sql = `INSERT INTO failOrderDetail(idFail,idProduct,countProduct)
-    SELECT idTrans,idProduct,countProduct FROM transDetail WHERE idTrans = '${idTrans}'`;
+    const sql = `INSERT INTO failOrderDetail(idFail,idProduct,countProduct,discount)
+    SELECT idTrans,idProduct,countProduct,discount FROM transDetail WHERE idTrans = '${idTrans}'`;
     return sql;
 }

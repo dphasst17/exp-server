@@ -1,6 +1,7 @@
 export const errResponseMessage = (res,err,status,message) => {
     if(err){
         res.status(status).json({
+            err:err,
             status:status,
             message:message
         })

@@ -84,6 +84,15 @@ export const updateDiscount = (discount,listIdProduct) => {
   return sql
 }
 /* --- */
+export const insertSale = (title,startDate,endDate) => {
+  const sql = `INSERT INTO sale (title,start_date,end_date)VALUES('${title}','${startDate}','${endDate}')`;
+  return sql;
+}
+export const insertSaleDetail = (idSale,data) => {
+  const result = data.map(e => e.listProduct.map(p => `(${idSale},${p},${e.discount})`))
+  const sql = `INSERT INTO saleDetail(idSale,idProduct,discount)VALUES ${result}`;
+  return sql;
+}
 export const getProductSale = (currentDate) => {
   const sql = `SELECT s.idSale,title,(start_date) AS startDate,(end_date) AS endDate,
   CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT('id',sd.id,'idProduct',p.idProduct,'nameProduct',p.nameProduct,'imgProduct',p.imgProduct,'price',p.price,'discount',sd.discount,'idType',p.idType,'type',t.nameType,'brand',p.brand)),']') AS detail
@@ -95,6 +104,33 @@ export const getProductSale = (currentDate) => {
   GROUP BY s.idSale`;
   return sql
 }
+export const updateSale = (data) => {
+  const sql = `UPDATE sale SET title = '${data.title}',start_date = '${data.startDate}', end_date = '${data.endDate}' WHERE idSale = ${data.idSale}`;
+  return sql
+}
+export const deleteSaleDetail = (idSale) => {
+  const sql = `DELETE FROM saleDetail WHERE idSale = ${idSale}`;
+  return sql
+}
+export const deleteSale = (idSale) => {
+  const sql = `DELETE FROM sale WHERE idSale = ${idSale}`;
+  return sql
+}
+export const getAllProductSale = () => {
+  const sql = `SELECT s.idSale,title,(start_date) AS startDate,(end_date) AS endDate
+  FROM sale s GROUP BY s.idSale;`;
+  return sql;
+}
+export const getDetailSale = (idSale) => {
+  const sql = `SELECT sd.id,p.idProduct,p.nameProduct,p.imgProduct,p.price,sd.discount,p.idType,t.nameType,p.brand
+  FROM sale s 
+  LEFT JOIN saleDetail sd ON s.idSale = sd.idSale 
+  LEFT JOIN products p ON sd.idProduct = p.idProduct
+  LEFT JOIN type t ON p.idType = t.idType
+  WHERE s.idSale = ${idSale}`
+  return sql
+}
+
 export const getNewProduct = () => {
   const sql = `SELECT p.* ,t.nameType,
   IF(sale.end_date >= CURDATE() AND sale.start_date <= CURDATE(), IFNULL(sd.discount, 0), 0) AS discount,

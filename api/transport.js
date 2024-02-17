@@ -2,7 +2,8 @@ import express from "express";
 import { poolConnectDB } from "../db/connect.js";
 import { transportsSelectAll,transportsSelectOne,transportInsert,
  transDetailInsertInList, transDetailDeleteAll, transDetailDeleteOne, transportsDelete, 
-insertFailOrderDetail, insertFailOrder,checkCountProductInTrans, transDetailUpdateStatus, transportsSelectByUser, cartDeleteList} from "../db/statement/cart_transport.js";
+insertFailOrderDetail, insertFailOrder,checkCountProductInTrans, transDetailUpdateStatus, transportsSelectByUser, cartDeleteList,
+transUpdateShipper} from "../db/statement/cart_transport.js";
 import {billsInsertOne, billDetailInsert} from "../db/statement/bills.js"
 import { verify,filterData } from "../middleware/middleware.js";
 import * as response from "../utils/handler.js";
@@ -23,7 +24,7 @@ router.get('/',(req,res) => {
         res.status(200).json(results.map(e => {
             return {
                 ...e,
-                detail:JSON.parse(e.detail)
+                /* detail:JSON.parse(e.detail) */
             }
         }));
     })
@@ -82,11 +83,19 @@ router.patch('/update/:idTrans',filterData,(req,res) => {
     const idTrans = req.params['idTrans'];
     const data = req.result;
     const sql = transDetailUpdateStatus(idTrans,data.status);
-    res.json(sql)
-    /* pool.query(sql,function(err,results){
+    pool.query(sql,function(err,results){
        response.errResponseMessage(res,err,500,message.err500Message())
-        res.status(201).json({message:'Update success'});
-    }) */
+       response.successResponseMessage(res,200,message.updateItemsMessage('status'))
+    })
+})
+router.put('/update/shipper/:idTrans',filterData,(req,res) => {
+    const idTrans = req.params['idTrans'];
+    const data = req.result;
+    const sql = transUpdateShipper(idTrans,data.shipper);
+    pool.query(sql,function(err,results){
+       response.errResponseMessage(res,err,500,message.err500Message())
+       response.successResponseMessage(res,200,message.updateItemsMessage('shipper'))
+    })
 })
 
 router.delete('/delete/all/:idTrans',filterData,(req,res) => {
@@ -140,7 +149,8 @@ router.delete('/delete/detail',filterData,(req,res) => {
 router.post('/success',filterData,(req,res) => {
     const data = req.result;
     const idTrans = data.id;
-    const sql = billsInsertOne(idTrans);
+    const date = new Date().toISOString().split('T')[0]
+    const sql = billsInsertOne(idTrans,date);
     const sqlDetail = billDetailInsert(idTrans)
     pool.query(sql,(err,results) => {
         response.errResponseMessage(res,err,500,message.err500Message())

@@ -5,7 +5,7 @@ dotenv.config();
 
 export const poolConnectDB = () => {
     let pool = mysql.createPool({
-        connectionLimit : 10,
+        connectionLimit : 15,
         host :process.env.HOST,
         user:process.env.USER,
         password:process.env.PASSWORD,

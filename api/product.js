@@ -66,6 +66,70 @@ router.get('/sale',(req,res) => {
     })
   })
 })
+router.get('/sale/all',(req,res) => {
+  const sql = sqlQuery.getAllProductSale();
+  pool.query(sql,(err,results) => {
+    response.errResponseMessage(res,err,500,message.err500Message())
+    const parseData = results.map(e => {
+      return {
+        ...e,
+        startDate:response.formatDate(e.startDate),
+        endDate:response.formatDate(e.endDate),
+      }
+    })
+    response.successResponseData(res,200,parseData)
+  })
+})
+
+router.get('/sale/detail/:id',(req,res) => {
+  const idSale = req.params['id']
+  const sql = sqlQuery.getDetailSale(idSale);
+  pool.query('SET SESSION group_concat_max_len = 1000000;',(errTest,resultsTest) => {
+    pool.query(sql,(err,results) => {
+      response.errResponseMessage(res,err,500,message.err500Message())
+      
+      response.successResponseData(res,200,results)
+    })
+  })
+})
+router.post('/sale',(req,res) => {
+  const data = req.body;
+  const sql = sqlQuery.insertSale(data.title,data.startDate,data.endDate)
+  pool.query(sql,(err,results) => {
+    response.errResponseMessage(res,err,500,message.err500Message())
+    const newId = results.insertId;
+    const sqlDetail = sqlQuery.insertSaleDetail(newId,data.detail);
+    pool.query(sqlDetail,(errDetail,resultsDetail) => {
+      response.errResponseMessage(res,errDetail,500,message.err500Message())
+      const data = {
+        id:newId,
+        message:message.createItemsMessage('event sale')
+      }
+      response.successResponseData(res,201,data)
+    })
+  })
+})
+router.patch('/sale',(req,res) => {
+  const data = req.body
+  const sql = sqlQuery.updateSale(data);
+  pool.query(sql,(err,results) => {
+    response.errResponseMessage(res,err,500,message.err500Message())
+    response.successResponseMessage(res,200,message.updateItemsMessage('sale'))
+  })
+})
+router.delete('/sale',(req,res) => {
+  const data = req.body;
+  const sql = sqlQuery.deleteSale(data.idSale);
+  const sqlDetail = sqlQuery.deleteSaleDetail(data.idSale);
+  pool.query(sqlDetail,(errDetail,resultsDetail) => {
+    response.errResponseMessage(res,errDetail,500,message.err500Message())
+    pool.query(sql,(err,results) => {
+      response.errResponseMessage(res,err,500,message.err500Message())
+      response.successResponseMessage(res,200,message.removeItemsMessage('sale'))
+    })
+  })
+})
+
 router.get("/new", (req, res) => {
   let sql = sqlQuery.getNewProduct();
   pool.query(sql, function (err, results) {
