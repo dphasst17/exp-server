@@ -16,7 +16,7 @@ export const getAllProduct = (parseData) => {
     return concatData;
   };
   const detailResult = arrDetail.map((e,i) => `CONCAT_WS(',', ${handleConcat(i)}) AS detail${e}`)
-  const sql = `SELECT p.*,IF(sale.end_date >= CURDATE() AND sale.start_date <= CURDATE(), IFNULL(sd.discount, 0), 0) AS discount,
+  const sql = `SELECT p.idProduct,p.nameProduct,p.price,p.imgProduct,p.idType,p.brand,IF(sale.end_date >= CURDATE() AND sale.start_date <= CURDATE(), IFNULL(sd.discount, 0), 0) AS discount,
   t.nameType,SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) AS quantity,${detailResult.map(e => e)} 
   FROM products p 
   LEFT JOIN warehouse w ON p.idProduct = w.idProduct 
@@ -132,7 +132,7 @@ export const getDetailSale = (idSale) => {
 }
 
 export const getNewProduct = () => {
-  const sql = `SELECT p.* ,t.nameType,
+  const sql = `SELECT p.idProduct,p.nameProduct,p.price,p.imgProduct,p.idType,p.brand,t.nameType,
   IF(sale.end_date >= CURDATE() AND sale.start_date <= CURDATE(), IFNULL(sd.discount, 0), 0) AS discount,
   SUM(CASE WHEN w.statusWare = 'import' THEN countProduct ELSE 0 END) - SUM(CASE WHEN w.statusWare = 'export' THEN countProduct ELSE 0 END) AS quantity
   FROM products p 
