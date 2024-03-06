@@ -1,5 +1,5 @@
 import express from "express";
-import dotenv from "dotenv";
+import dotenv, { parse } from "dotenv";
 import { poolConnectDB } from "../db/connect.js";
 import { filterData } from "../middleware/middleware.js";
 import * as sqlQuery from "../db/statement/product.js";
@@ -138,6 +138,7 @@ router.get("/new", (req, res) => {
     res.status(200).json(results);
   });
 });
+/* Đoạn này thêm set group concat max length vào */
 router.get("/type/:type", (req, res) => {
   const name = req.params["type"];
   const shortName = name.split("")[0];
@@ -148,12 +149,12 @@ router.get("/type/:type", (req, res) => {
     const sqlResult = sqlQuery.getProductDetailByType(results, name, shortName);
     pool.query(sqlResult, (lastErr, lastResult) => {
       response.errResponseMessage(res,lastErr,500,message.err500Message())
-      
       res.status(200).json(
         lastResult.map((e) => {
+          const parseDetail = JSON.parse(e.detail)
           return {
             ...e,
-            detail: JSON.parse(e.detail),
+            detail: [parseDetail[0]],
           };
         })
       );
@@ -180,6 +181,12 @@ router.get("/detail/get/:nameType/:idProduct", (req, res) => {
       res.status(200).json(
         lastResult.map((e) => {
           let subImg = JSON.parse(e.img);
+          let parseDetail = JSON.parse(e.detail);
+          let resultData = {}
+          Object.keys(parseDetail[0]).forEach(key => {
+            let values = parseDetail.map(d => d[key]);
+            resultData[key] = Array.from(new Set(values));
+          });
           let formatResult = {
             ...e,
             imgProduct: subImg.every((c) =>
@@ -187,7 +194,7 @@ router.get("/detail/get/:nameType/:idProduct", (req, res) => {
             )
               ? [{ img: e.imgProduct, type: "default" }]
               : [{ img: e.imgProduct, type: "default" }, ...subImg],
-            detail: JSON.parse(e.detail),
+            detail: [resultData],
           };
           delete formatResult.img;
           return formatResult;
@@ -213,7 +220,6 @@ router.post("/insert/type", filterData, (req, res) => {
         response.errResponseMessage(res,errs,500,message.err500Message())
 
         response.successResponseMessage(res,201,message.createItemsMessage('the new type'))
-        /* res.status(201).json({ status: 201, message: "Create success" }); */
       });
     });
   });
@@ -365,3 +371,29 @@ router.delete("/list/delete", filterData, (req, res) => {
   });
 });
 export default router;
+{
+idProduct:1
+nameProduct:"Msi Bravo"
+price:840
+imgProduct:"https://asset.msi.com/resize/image/global/product/product_162175108621129650150f18f256a57cdb5001e680.png62405b38c58fe0f07fcef2367d8a9ba1/400.png"
+dateAdded:"2023-05-25T17:00:00.000Z"
+des:"A laptop is a portable computer that is designed to be used on the go. It typically has a built-in screen, keyboard, and touchpad or trackpad. Laptops come in a variety of sizes and configurations, ranging from lightweight ultrabooks to high-performance gaming laptops. They are powered by rechargeable batteries and can be used for a variety of tasks, such as browsing the web, creating documents, playing games, and more."
+view:124
+idType:1
+brand:"msi"
+nameType:"laptop"
+discount:5
+quantity:"136"
+detail:[
+  {
+    "os":["Windows 11 Pro","Windows 11 Home"],
+    "cpu":["AMD Ryzen 5 5800H","AMD Ryzen 7 5000 Series"],
+    "maxram":["64GB"],
+    "battery":["53Wh"],
+    "storage":["1TB","512GB"],
+    "capacity":["16GB","8GB"],
+    "material":["Vỏ nhôm"],
+    "sizeInch":[16,15.6],
+    "resolution":["1920x1080"],
+  }
+]}

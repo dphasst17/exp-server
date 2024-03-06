@@ -63,7 +63,10 @@ router.post('/insert',verify,filterData,(req,res) => {
     const listIdCart = data.listIdCart.join(",")
     const textRandom = randomText(4)
     const idTrans = `${idUser}${month}${year}-${textRandom}`
-    const sql = transportInsert(idTrans,idUser,data.info);
+    let date = new Date();
+    date.setDate(date.getDate() + 6);
+    const edd = date.toISOString().split('T')[0]
+    const sql = transportInsert(idTrans,idUser,data.info,edd,data.isPayment);
     const sql2 = transDetailInsertInList(listIdCart,idTrans);
     const deleteCart = cartDeleteList(listIdCart)
     pool.query(sql,function(err,results){
