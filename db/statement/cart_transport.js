@@ -38,13 +38,14 @@ export const checkCountProductInTrans = (idTrans) => {
     const sql = `SELECT COUNT(*)AS quantity FROM transDetail WHERE idTrans = '${idTrans}'`;
     return sql
 }
-export const transportInsert = (idTrans,idUser,data) => {
+export const transportInsert = (idTrans,idUser,data,edd,isPayment) => {
     const name = data.name;
     const phone = data.phone;
     const address = data.address;
     const costs = data.costs;
     const method = data.method;
-    const sql = `INSERT INTO transports(idTrans,idUser,fullName,phone,address,costs,method)VALUES('${idTrans}','${idUser}','${name}','${phone}','${address}',${costs},'${method}')`;
+    const sql = `INSERT INTO transports(idTrans,idUser,fullName,phone,address,costs,method,edd,paymentStatus)VALUES
+    ('${idTrans}','${idUser}','${name}','${phone}','${address}',${costs},'${method}','${edd}','${isPayment === true ? 'paid' : 'unpaid'}')`;
     return sql;
 }
 export const transDetailInsert = (idTrans,idProduct,count) => {
