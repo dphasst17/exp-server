@@ -95,7 +95,7 @@ export const insertSaleDetail = (idSale,data) => {
 }
 export const getProductSale = (currentDate) => {
   const sql = `SELECT s.idSale,title,(start_date) AS startDate,(end_date) AS endDate,
-  CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT('id',sd.id,'idProduct',p.idProduct,'nameProduct',p.nameProduct,'imgProduct',p.imgProduct,'price',p.price,'discount',sd.discount,'idType',p.idType,'type',t.nameType,'brand',p.brand)),']') AS detail
+  CONCAT('[',GROUP_CONCAT(DISTINCT JSON_OBJECT('id',sd.id,'idProduct',p.idProduct,'nameProduct',p.nameProduct,'imgProduct',p.imgProduct,'price',p.price,'discount',sd.discount,'idType',p.idType,'nameType',t.nameType,'brand',p.brand)),']') AS detail
   FROM sale s 
   LEFT JOIN saleDetail sd ON s.idSale = sd.idSale 
   LEFT JOIN products p ON sd.idProduct = p.idProduct
