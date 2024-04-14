@@ -39,7 +39,7 @@ app.use(function (req, res, next) {
 });
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minutes
-  max: 10,
+  max: process.env.LIMIT_REQ,
   handler: function (req, res) {
     res.status(429).send({
       status: 500,
