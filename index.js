@@ -18,6 +18,7 @@ import {
 import AWS from "aws-sdk";
 import fs from "fs";
 import fileUpload from "express-fileupload";
+import rateLimit from "express-rate-limit";
 const app = express();
 const PORT = process.env.PORT || 1705;
 
@@ -34,6 +35,20 @@ app.use(function (req, res, next) {
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept, Authorization"
   );
+  next();
+});
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minutes
+  max: 10,
+  handler: function (req, res) {
+    res.status(429).send({
+      status: 500,
+      message: 'Too many requests!',
+    });
+  },
+});
+app.use((req, res, next) => {
+  console.log(`Endpoint: ${req.originalUrl}`);
   next();
 });
 
@@ -80,7 +95,7 @@ app.post("/upload/:folder", async (req, res) => {
     }
   }
 
-  res.status(201).json({message:"All files uploaded successfully"});
+  res.status(201).json({ message: "All files uploaded successfully" });
 });
 
 const routerArr = [
@@ -93,7 +108,7 @@ const routerArr = [
   { path: "posts", routes: postsRouter },
   { path: "order", routes: oderRouter },
 ];
-routerArr.map((e) => app.use(`/api/${e.path}`, e.routes));
+routerArr.map((e) => app.use(`/api/${e.path}`,apiLimiter, e.routes));
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.get("/restart", (req, res) => {
