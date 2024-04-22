@@ -25,8 +25,14 @@ const PORT = process.env.PORT || 1705;
 dotenv.config();
 app.use(express.json());
 //config cors
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", ['https://dinhphat.tech','https://admintech-74572.web.app/']);
+var allowedOrigins = ['https://dinhphat.tech','https://admintech-74572.web.app'];
+
+app.use(function(req, res, next) {
+  const origin = req.headers.origin;
+  if(allowedOrigins.indexOf(origin) > -1){
+       res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  //rest of headers
   res.header(
     "Access-Control-Allow-Methods",
     "GET,HEAD,OPTIONS,POST,PUT,PATCH,DELETE"
@@ -37,6 +43,7 @@ app.use(function (req, res, next) {
   );
   next();
 });
+
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minutes
   max: process.env.LIMIT_REQ,
