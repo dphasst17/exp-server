@@ -26,7 +26,7 @@ dotenv.config();
 app.use(express.json());
 //config cors
 app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Origin", ['http://dinhphat.tech','https://admintech-74572.web.app/']);
   res.header(
     "Access-Control-Allow-Methods",
     "GET,HEAD,OPTIONS,POST,PUT,PATCH,DELETE"
